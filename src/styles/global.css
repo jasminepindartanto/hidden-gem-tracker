@@ -74,6 +74,7 @@
   --nebula: 142 71% 45%;
   --solar: 32 100% 51%;
   --cosmic: 84 81% 56%;
+  --lumen: 200 86% 60%;
 }
 
 pre.mermaid {
@@ -137,6 +138,10 @@ pre.mermaid {
 
   .text-cosmic {
     color: hsl(var(--cosmic));
+  }
+
+  .text-lumen {
+    color: hsl(var(--lumen));
   }
 
   .line-clamp-2 {

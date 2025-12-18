@@ -4,6 +4,7 @@ import BlogCard from "@/components/blog/BlogCard.astro";
 import CardCover from "@/components/knowledge-card/CardCover.astro";
 import HeroSection from "@/components/landing-page/HeroSection.astro";
 import LatestSection from "@/components/landing-page/LatestSection.astro";
+import ProductSection from "@/components/ProductSection.astro";
 import SlideCard from "@/components/slide/SlideCard.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "@/consts";
 import MainLayout from "@/layouts/MainLayout.astro";
@@ -90,6 +91,8 @@ const activeDoodle = activeDoodleEntry
       {posts.map((blog) => <BlogCard blog={blog} />)}
     </LatestSection>
 
+    <ProductSection />
+
     <LatestSection
       title="Cards"
       accentColor="text-solar"
@@ -106,6 +109,8 @@ const activeDoodle = activeDoodleEntry
         ))
       }
     </LatestSection>
+
+    <ProductSection />
 
     <LatestSection
       title="Slides"
