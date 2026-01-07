@@ -3,7 +3,7 @@ title: "Quadratic Function 101"
 author: "foxgem"
 description: "A concise, visual tour of quadratic functions: forms, graphs, and solving."
 pubDate: 2025-12-22
-tags: ["math", "algebra", "quadratic"]
+tags: ["Favorit", "Nature"]
 theme: "beige"
 transition: "slide"
 controls: true

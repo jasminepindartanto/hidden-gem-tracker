@@ -3,7 +3,7 @@ title: "Groq Code CLI Internal"
 pubDate: "2025-08-16T05:58:17.000Z"
 author: foxgem
 description: "How Groq Code CLI works internally."
-tags: [coding-cli, how-it-works, agent]
+tags: ["Nature", "Cafes", "Historical", "Art"]
 ---
 
 I'm always curious about how a coding cli like Claude Code or Gemini Cli works internally. But I couldn't find enough time to spend on it since I have been busy with my own projects.

@@ -45,8 +45,9 @@ export interface SlideTheme {
   overlayColor: string;
 }
 
-export const SITE_TITLE = "MONA";
-export const SITE_DESCRIPTION = "Mona — Learn from What We Build";
+export const SITE_TITLE = "Hidden Bandung";
+export const SITE_DESCRIPTION =
+  "Hidden Bandung - Tempat Tempat Hidden gem yang ada di Kota Bandung dan sekitarnya";
 
 export const PROD_URL = "https://www.mymona.xyz";
 
@@ -81,7 +82,7 @@ export interface MenuItem {
 export const MENU_ITEMS: MenuItem[] = [
   {
     id: "blogs",
-    label: "Articles",
+    label: "Home",
     href: "/blogs",
     title: "Articles",
     description:
@@ -89,23 +90,23 @@ export const MENU_ITEMS: MenuItem[] = [
   },
   {
     id: "cards",
-    label: "Cards",
+    label: "Destinations",
     href: "/cards",
     title: "Cards",
     description: "Developer-Gathered, AI-Crafted, Human-Checked.",
   },
   {
     id: "slides",
-    label: "Slides",
+    label: "TravelMap",
     href: "/slides",
     title: "Slides",
     description: "Interactive presentations crafted for developers.",
   },
   {
-    id: "open-source",
-    label: "GitHub",
-    href: "https://github.com/monakit/monakit",
-    title: "GitHub",
+    id: "reviews",
+    label: "Reviews",
+    href: "/reviews",
+    title: "Reviews",
     description: "Explore our open-source projects.",
   },
 ];
