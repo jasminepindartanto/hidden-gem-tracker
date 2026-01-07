@@ -1,6 +1,3 @@
-# MonaKit
-
-Multi-format content platform built with Astro, featuring knowledge cards, articles, presentations, and announcements.
 
 ## Features
 
