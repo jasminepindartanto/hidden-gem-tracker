@@ -21,7 +21,7 @@ interface SlideViewerProps {
 
 export const SlideViewer: React.FC<SlideViewerProps> = ({
   content,
-  theme = "black",
+  theme = "white",
   transition = "slide",
   controls = true,
   progress = true,

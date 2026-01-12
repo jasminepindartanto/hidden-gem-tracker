@@ -83,6 +83,15 @@ export const MENU_ITEMS: MenuItem[] = [
   {
     id: "blogs",
     label: "Home",
+    href: "/",
+    title: "Articles",
+    description:
+      "Practical guides, in-depth technical pieces, and lessons from real projects.",
+  },
+
+  {
+    id: "blogs",
+    label: "Destinations",
     href: "/blogs",
     title: "Articles",
     description:
@@ -90,14 +99,14 @@ export const MENU_ITEMS: MenuItem[] = [
   },
   {
     id: "cards",
-    label: "Destinations",
+    label: "TravelMap",
     href: "/cards",
     title: "Cards",
     description: "Developer-Gathered, AI-Crafted, Human-Checked.",
   },
   {
     id: "slides",
-    label: "TravelMap",
+    label: "Reviews",
     href: "/slides",
     title: "Slides",
     description: "Interactive presentations crafted for developers.",
