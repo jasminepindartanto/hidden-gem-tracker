@@ -1,3 +1,4 @@
+ HEAD
 
 ## Features
 
@@ -56,3 +57,6 @@ Content organized by year/month subdirectories.
 ## Product Data
 
 All products data is defined in `src/assets/creations.json`.
+
+# hidden-gem-tracker
+fa1c3d9a4c66603277cb4a5f258ece5c9418ba8d
