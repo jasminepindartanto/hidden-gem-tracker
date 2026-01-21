@@ -3,6 +3,7 @@ import { getCollection, getEntry, render } from "astro:content";
 import sitemap from "sitemap-ext:config";
 import FormattedDate from "@/components/FormattedDate.astro";
 import { ImageViewer } from "@/components/image-viewer";
+import LocationSidebar from "@/components/LocationSidebar.astro"; // Import sidebar baru
 import ContentNavigation from "@/components/navigation/ContentNavigation.astro";
 import ShareButtons from "@/components/ShareButtons.astro";
 import TagFilter from "@/components/TagFilter.astro";
@@ -14,7 +15,6 @@ import "@/styles/article.css";
 // add all blog posts to sitemap
 sitemap(async ({ addToSitemap }) => {
   const blogPosts = await getCollection("blogs");
-
   addToSitemap(
     blogPosts.map((post) => ({
       slug: post.id,
@@ -59,7 +59,7 @@ const pageTitle = `${post.data.title} | ${SITE_TITLE}`;
   <article class="container px-4 md:px-6 prose-teahouse">
     <div class="max-w-screen-lg mx-auto p-4">
       <div class="mb-4 py-4 text-center leading-none">
-        <h1 class="mb-2 font-serif">{post.data.title}</h1>
+        <h1 class="mb-2 font-serif text-white">{post.data.title}</h1>
         <div class="date mb-2 text-gray-500">
           <FormattedDate date={post.data.pubDate} />
           {
@@ -72,9 +72,7 @@ const pageTitle = `${post.data.title} | ${SITE_TITLE}`;
         </div>
         {post.data.author && <div class="text-gray-500">{post.data.author}</div>}
       </div>
-      <div
-        class="block space-y-4 md:flex md:items-center md:justify-between md:space-y-0"
-      >
+      <div class="block space-y-4 md:flex md:items-center md:justify-between md:space-y-0">
         {
           tags.length > 0 && (
             <TagFilter
@@ -92,16 +90,27 @@ const pageTitle = `${post.data.title} | ${SITE_TITLE}`;
           />
         </div>
       </div>
-      <hr />
+      <hr class="border-slate-800" />
     </div>
-    <div class="max-w-screen-lg mx-auto p-4 text-lg">
-      <Content />
-    </div>
-    <div class="max-w-screen-lg mx-auto p-4">
-      <ContentNavigation
-        adjacentContent={adjacentContent}
-        contentType="blogs"
-      />
+
+    <div class="max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12 p-4">
+      
+      <div class="lg:col-span-2">
+        <div class="text-lg text-slate-300 leading-relaxed mb-12">
+          <Content />
+        </div>
+        
+        <div class="mt-16 pt-8 border-t border-slate-800">
+          <ContentNavigation
+            adjacentContent={adjacentContent}
+            contentType="blogs"
+          />
+        </div>
+      </div>
+
+      <aside class="hidden lg:block space-y-8 sticky top-24">
+        <LocationSidebar blog={post.data} />
+      </aside>
     </div>
   </article>
   <ImageViewer selector="article img" client:load />

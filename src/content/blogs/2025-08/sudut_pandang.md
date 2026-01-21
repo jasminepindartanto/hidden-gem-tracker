@@ -1,9 +1,15 @@
 ---
-title: "Groq Code CLI Internal"
+title: "Sudut Pandang"
+rating: 4.8
 pubDate: "2025-08-16T05:58:17.000Z"
-author: foxgem
 description: "How Groq Code CLI works internally."
 tags: ["Nature", "Cafes", "Historical", "Art"]
+location: "Lembang"
+address: "Ciburial, Cimenyan, West Bandung Regency, West Java 40198"
+distance: "12.5 km"
+travelTime: "45 min"
+googleMapsUrl: ""
+
 ---
 
 I'm always curious about how a coding cli like Claude Code or Gemini Cli works internally. But I couldn't find enough time to spend on it since I have been busy with my own projects.

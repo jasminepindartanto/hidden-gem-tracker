@@ -100,7 +100,7 @@ export const MENU_ITEMS: MenuItem[] = [
   {
     id: "cards",
     label: "TravelMap",
-    href: "/cards",
+    href: "/travelmap",
     title: "Cards",
     description: "Developer-Gathered, AI-Crafted, Human-Checked.",
   },

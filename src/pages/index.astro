@@ -19,6 +19,10 @@ const allPosts = (await getCollection("blogs"))
     updatedDate: post.data.updatedDate,
     author: post.data.author,
     metadata: post.data.metadata,
+    // Pastikan data ini tetap diangkut agar BlogCard tidak kosong
+    rating: post.data.rating,
+    image: post.data.image,
+    location: post.data.location,
   }))
   .sort((a, b) => b.pubDate.valueOf() - a.pubDate.valueOf());
 
@@ -32,7 +36,7 @@ const allCards = (await getCollection("cards"))
   }));
 
 const allSlides = (await getCollection("slides"))
-  .filter((slide) => slide.data.pubDate) // Filter out slides without pubDate
+  .filter((slide) => slide.data.pubDate)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .map((slide) => ({
     id: slide.id,
@@ -79,54 +83,130 @@ const activeDoodle = activeDoodleEntry
 >
   <HeroSection uniqueTags={uniqueTags} doodle={activeDoodle} />
 
-  <div class="px-4 md:px-6">
+  <div class="px-4 md:px-8 lg:px-12 max-w-7xl mx-auto">
+    
     <LatestSection
-      title="Articles"
+      title="Curated For You"
       accentColor="text-nebula"
-      description="Fresh insights and lessons from our recent explorations."
+      description="Hand-picked destinations for your weekend getaway."
       viewAllHref="/blogs"
-      viewAllText="View All Articles"
+      viewAllText="View All Destinations"
       viewAllButtonWidth="165px"
     >
       {posts.map((blog) => <BlogCard blog={blog} />)}
     </LatestSection>
 
-    <ProductSection />
+    <section class="mt-16 mb-24">
+      <div class="mb-10">
+        <h2 class="text-3xl font-bold text-white mb-2">Near You</h2>
+        <p class="text-slate-400 text-sm">Based on your current location in Coblong.</p>
+      </div>
 
-    <LatestSection
-      title="Cards"
-      accentColor="text-solar"
-      description="Check out our quick notes and summaries"
-      viewAllHref="/cards"
-      viewAllText="View All Cards"
-      viewAllButtonWidth="154px"
-    >
-      {
-        cards.map((card) => (
-          <a href={`/cards/${card.id}`}>
-            <CardCover title={card.title} template={card.template} />
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-16">
+        {[
+          { title: "Masagi Coffee", dist: "0.8 km", cat: "Cafe", rat: "4.6", img: "/images/masagi.jpg" },
+          { title: "Warung Langit", dist: "1.2 km", cat: "Views", rat: "4.5", img: "/images/warung.jpg" },
+          { title: "Selasar Sunaryo", dist: "2.1 km", cat: "Art", rat: "4.9", img: "/images/selasar.jpg" },
+          { title: "The Lodge Maribaya", dist: "3.5 km", cat: "Nature", rat: "4.4", img: "/images/lodge.jpg" }
+        ].map((item) => (
+          <div class="flex items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer group">
+            <div class="w-16 h-16 rounded-xl bg-slate-200 overflow-hidden flex-shrink-0">
+              <img src={item.img} alt={item.title} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+            </div>
+            <div class="overflow-hidden">
+              <h4 class="font-bold text-slate-800 text-sm truncate">{item.title}</h4>
+              <p class="text-[11px] text-slate-500 mt-0.5">{item.dist} away • {item.cat}</p>
+              <div class="flex items-center gap-1 mt-1.5">
+                <span class="text-yellow-400 text-[11px]">⭐</span>
+                <span class="text-[11px] font-bold text-slate-700">{item.rat}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div class="relative overflow-hidden rounded-[40px] bg-[#2D4A3E] p-12 md:p-20 text-center shadow-2xl">
+        <div class="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 to-transparent opacity-40"></div>
+        <div class="absolute -top-24 -right-24 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl"></div>
+
+        <div class="relative z-10 flex flex-col items-center">
+          <span class="text-[11px] uppercase tracking-[0.4em] text-emerald-300/70 font-bold mb-6">
+            Discover Visually
+          </span>
+          <h2 class="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight">
+            Explore the Interactive Map
+          </h2>
+          <p class="text-emerald-100/60 text-base md:text-lg max-w-2xl mb-12 leading-relaxed">
+            Navigate through the hidden corners of Bandung. Use our live map to see what's trending and find spots near you.
+          </p>
+
+          <a 
+            href="/travelmap" 
+            class="flex items-center gap-3 bg-white text-[#2D4A3E] px-10 py-4.5 rounded-full font-bold shadow-xl hover:bg-emerald-50 transition-all transform hover:scale-105 active:scale-95"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83a1 1 0 0 1 1.447.894v12.764a2 2 0 0 1-1.106 1.789l-4.789 2.394a2 2 0 0 1-1.788 0l-3.659-1.83a2 2 0 0 0-1.788 0l-4.789 2.394a1 1 0 0 1-1.447-.894V6.342a2 2 0 0 1 1.106-1.789l4.789-2.394a2 2 0 0 1 1.788 0z"/>
+              <path d="M15 7v14"/><path d="M9 3v14"/>
+            </svg>
+            Open Interactive Map
           </a>
-        ))
-      }
-    </LatestSection>
+        </div>
+      </div>
+    </section>
+    <section class="mt-24 mb-24">
+      <div class="mb-10">
+        <h2 class="text-3xl font-bold text-white mb-2">Recent Community Reviews</h2>
+        <p class="text-slate-400 text-sm">What explorers are saying about their latest findings.</p>
+      </div>
 
-    <ProductSection />
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { 
+            name: "Ariana D.", 
+            loc: "Lawangwangi Creative Space", 
+            text: "The sunset view from the deck is unmatched. Perfect blend of art gallery and cafe atmosphere.", 
+            stars: 5 
+          },
+          { 
+            name: "Rizky S.", 
+            loc: "Tebing Keraton", 
+            text: "Go before 5 AM for the sunrise. It's magical but can get quite chilly. Bring a jacket!", 
+            stars: 4 
+          },
+          { 
+            name: "Maya L.", 
+            loc: "Kopi Toko Djawa", 
+            text: "Love the vintage vibes here. The Es Kopi Awan is a must-try for any coffee lover visiting Braga.", 
+            stars: 5 
+          }
+        ].map((rev) => (
+          <div class="bg-white p-8 rounded-[32px] shadow-sm hover:shadow-md transition-all border border-slate-100 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 rounded-full bg-[#1e2f28] flex items-center justify-center font-bold text-emerald-100 text-sm">
+                  {rev.name.split(' ').map(n => n[0]).join('')}
+                </div>
+                <div>
+                  <p class="text-slate-900 font-bold text-sm leading-none mb-1">{rev.name}</p>
+                  <p class="text-slate-500 text-[11px]">Reviewing: <span class="font-medium text-slate-700">{rev.loc}</span></p>
+                </div>
+              </div>
+              
+              <div class="flex gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <span class={`text-[12px] ${i < rev.stars ? 'text-yellow-400' : 'text-slate-200'}`}>
+                    ★
+                  </span>
+                ))}
+              </div>
 
-    <LatestSection
-      title="Slides"
-      accentColor="text-cosmic"
-      description="Interactive presentations crafted for developers."
-      viewAllHref="/slides"
-      viewAllText="View All Slides"
-      viewAllButtonWidth="155px"
-    >
-      {
-        slides.map((slide) => (
-          <a href={`/slides/${slide.id}`}>
-            <SlideCard slide={slide} />
-          </a>
-        ))
-      }
-    </LatestSection>
+              <p class="text-slate-600 text-sm italic leading-relaxed">
+                "{rev.text}"
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   </div>
 </MainLayout>

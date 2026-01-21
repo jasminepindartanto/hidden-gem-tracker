@@ -25,9 +25,15 @@ export const PageBaseMetadata = z.object({
 });
 
 export const BlogMetadata = PageBaseMetadata.extend({
-  author: z.string().optional(),
   tags: z.array(z.string()).default([]),
   metadata: z.array(z.string()).optional(),
+  rating: z.number().min(0).max(5).optional(),
+  location: z.string().optional(),
+  image: z.string().optional(),
+  address: z.string().optional(), // Alamat lengkap
+  distance: z.string().optional(), // Contoh: "12.5 km"
+  travelTime: z.string().optional(), // Contoh: "45 min"
+  googleMapsUrl: z.string().optional(),
 });
 
 export const BaseAIConfig = z.object({
