@@ -1,10 +1,25 @@
 ---
-import ContentIndexLayout from "../../layouts/ContentIndexLayout.astro";
+import MainLayout from "../../layouts/MainLayout.astro";
+import CardCover from "@/components/knowledge-card/CardCover.astro";
+import { SITE_TITLE } from "@/consts";
+import sql from "@/lib/db";
+
+// Ambil data langsung dari database
+const dbCards = await sql`SELECT id, dtw as title FROM lokasi_wisata ORDER BY id ASC`;
 ---
 
-<ContentIndexLayout
-  collectionType="cards"
-  title="Cards"
-  description="Developer-Gathered, AI-Crafted, Human-Checked."
-  defaultLimit={24}
-/>
+<MainLayout 
+  title={`Destinasi Wisata | ${SITE_TITLE}`} 
+  description="Daftar lengkap destinasi wisata di Bandung yang diambil langsung dari database."
+>
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8 text-center">Destinasi Wisata</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {dbCards.map((card) => (
+        <a href={`/cards/${card.id}`}>
+          <CardCover title={card.title} template="blackWhite" />
+        </a>
+      ))}
+    </div>
+  </div>
+</MainLayout>
