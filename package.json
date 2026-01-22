@@ -10,9 +10,13 @@
   "peerDependencies": {
     "astro": "^5.12.0"
   },
-  "scripts": {
-  "fix": "eslint src --fix"
+ "scripts": {
+  "dev": "astro dev",
+  "build": "astro build",
+  "preview": "astro preview",
+  "fix": "eslint \"src/**/*.{js,ts,astro}\" --fix"
   },
+
 
   "dependencies": {
     "@astrojs/check": "^0.9.4",
