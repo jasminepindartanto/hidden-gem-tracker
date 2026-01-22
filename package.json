@@ -11,7 +11,10 @@
     "astro": "^5.12.0"
   },
   "scripts": {
-  "fix": "eslint src --fix"
+  "dev": "astro dev",
+  "build": "astro build",
+  "preview": "astro preview",
+  "fix": "eslint \"src/**/*.{js,ts,astro}\" --fix"
   },
 
   "dependencies": {

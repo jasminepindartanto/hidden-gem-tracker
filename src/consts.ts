@@ -107,17 +107,17 @@ export const MENU_ITEMS: MenuItem[] = [
   {
     id: "slides",
     label: "Reviews",
-    href: "/slides",
-    title: "Slides",
+    href: "/reviews",
+    title: "reviews",
     description: "Interactive presentations crafted for developers.",
   },
-  {
-    id: "reviews",
-    label: "Reviews",
-    href: "/reviews",
-    title: "Reviews",
-    description: "Explore our open-source projects.",
-  },
+  // {
+  //   id: "reviews",
+  //   label: "Reviews",
+  //   href: "/reviews",
+  //   title: "Reviews",
+  //   description: "Explore our open-source projects.",
+  // },
 ];
 
 export const getNavigationItems = (): MenuItem[] => {
