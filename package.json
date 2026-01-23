@@ -10,13 +10,12 @@
   "peerDependencies": {
     "astro": "^5.12.0"
   },
- "scripts": {
+  "scripts": {
   "dev": "astro dev",
   "build": "astro build",
   "preview": "astro preview",
-  "fix": "eslint \"src/**/*.{js,ts,astro}\" --fix"
+  "db:push": "drizzle-kit push"
   },
-
 
   "dependencies": {
     "@astrojs/check": "^0.9.4",

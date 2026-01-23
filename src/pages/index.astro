@@ -154,9 +154,19 @@ const activeDoodle = activeDoodleEntry
       </div>
     </section>
     <section class="mt-24 mb-24">
-      <div class="mb-10">
-        <h2 class="text-3xl font-bold text-white mb-2">Recent Community Reviews</h2>
-        <p class="text-slate-400 text-sm">What explorers are saying about their latest findings.</p>
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+        <div>
+          <h2 class="text-3xl font-bold text-white mb-2 font-noto-serif">Recent Community Reviews</h2>
+          <p class="text-slate-400 text-sm">What explorers are saying about their latest findings.</p>
+        </div>
+        
+        <a 
+          href="/reviews" 
+          class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-slate-700 text-white text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-slate-900 transition-all active:scale-95 shadow-lg shadow-black/20"
+        >
+          View All Reviews
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </a>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

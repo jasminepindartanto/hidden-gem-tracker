@@ -1,0 +1,43 @@
+---
+// src/components/RatingSummary.astro
+const { allReviews } = Astro.props;
+
+const total = allReviews.length;
+// Mencegah NaN: Jika total 0, maka rata-rata 0
+const average = total > 0 
+  ? (allReviews.reduce((acc, rev) => acc + rev.data.rating, 0) / total).toFixed(1) 
+  : "0.0";
+
+const distribution = [5, 4, 3, 2, 1].map(star => {
+  const count = allReviews.filter(rev => rev.data.rating === star).length;
+  const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+  return { star, count, percentage };
+});
+---
+
+<div class="bg-slate-900/50 border border-slate-700 rounded-[32px] p-8 mb-12 backdrop-blur-md">
+  <div class="flex flex-col md:flex-row gap-12 items-center">
+    <div class="text-center min-w-[140px]">
+      <div class="text-6xl font-bold text-white mb-2">{average}</div>
+      <div class="flex justify-center gap-1 text-emerald-400 text-xl mb-2">
+        {[...Array(5)].map((_, i) => (<span>{i < Math.round(Number(average)) ? '★' : '☆'}</span>))}
+      </div>
+      <div class="text-slate-500 text-xs uppercase tracking-widest font-bold">{total} reviews total</div>
+    </div>
+
+    <div class="flex-grow w-full space-y-4">
+      {distribution.map(item => (
+        <div class="flex items-center gap-4 group">
+          <span class="text-xs font-bold text-slate-500 w-3">{item.star}</span>
+          <div class="flex-grow h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
+            <div 
+              class="h-full bg-emerald-500 transition-all duration-700 shadow-[0_0_10px_rgba(16,185,129,0.3)]" 
+              style={`width: ${item.percentage}%`}
+            ></div>
+          </div>
+          <span class="text-xs font-bold text-slate-500 w-10 text-right">{item.percentage}%</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>

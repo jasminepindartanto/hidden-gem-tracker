@@ -1,76 +1,93 @@
 ---
-// src/pages/wisata/[id].astro
 import MainLayout from "../../layouts/MainLayout.astro";
 import KnowledgeCard from "@/components/knowledge-card/KnowledgeCard.astro";
 import { SITE_TITLE } from "@/consts";
-import sql from "../../lib/db"; // Import koneksi database kamu
+import sql from "../../lib/db"; 
 import { createCardStyles, getTemplateKey } from "@/lib/utils";
 import { KNOWLEDGE_CARD_THEME } from "@/themes/knowledge-card-themes";
 
 const { id } = Astro.params;
 
+// 1. VALIDASI ID: Menghilangkan error ts(2769)
 if (!id) {
   return Astro.redirect("/404");
 }
 
-const result = await sql`SELECT * FROM lokasi_wisata WHERE id = ${id}`;
-const tempat = result[0];
+// 2. QUERY TEMPAT: Gunakan nama variabel unik untuk menghindari redeclaration error ts(2451)
+const resultTempat = await sql`SELECT * FROM lokasi_wisata WHERE id = ${id}`;
+const tempat = resultTempat[0];
 
 if (!tempat) {
   return Astro.redirect("/404");
 }
 
-// 2. Ambil semua kartu untuk navigasi rekomendasi (opsional)
-const allCards = await sql`SELECT id, dtw as title FROM lokasi_wisata ORDER BY id DESC`;
+// 3. QUERY ULASAN: Fitur Interaktif
+const ulasanData = await sql`SELECT * FROM ulasan WHERE lokasi_id = ${id} ORDER BY tanggal DESC`;
 
-// 3. Metadata untuk SEO
-const cardTitle = tempat.dtw;
-const cardDescription = tempat.deskripsi_lengkap || "Informasi lokasi wisata";
-const origin = Astro.url.origin;
-
-// Sesuaikan template warna (default 'blackWhite' jika null)
-const currentTemplate = "blackWhite"; 
+const latitude = tempat.latitude;
+const longitude = tempat.longitude;
+const currentTemplate = "blackWhite";
 ---
 
-<MainLayout
-  title={`${cardTitle} | ${SITE_TITLE}`}
-  description={cardDescription}
->
+<MainLayout title={`${tempat.dtw} | ${SITE_TITLE}`} description={tempat.deskripsi_lengkap}>
   <div class="container mx-auto px-4 py-8">
-    <div class="max-w-6xl mx-auto">
-      <div class="mb-16 relative mx-auto" style="max-width:800px;">
-        
-        <div class="xl:relative xl:z-10">
-          <KnowledgeCard
-            articleData={{
-                title: tempat.dtw,
-                description: tempat.deskripsi_lengkap || "",
-                // Tambahkan properti kosong di bawah ini agar error ts(2739) hilang
-                keyPoints: [],
-                references: [],
-                tools: [],
-                mermaidMarkdown: "",
-            }}
-            url={`${origin}/wisata/${tempat.id}`}
-            cardStyles={createCardStyles(getTemplateKey(currentTemplate))}
-            cardTheme={KNOWLEDGE_CARD_THEME[getTemplateKey(currentTemplate)]}
-            tags={[tempat.provinsi, tempat.kotakabupaten]}
-            isFlipped={false}
-          />
-        </div>
-
-      </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       
-      <div class="mt-16">
-        <h2 class="text-2xl font-bold mb-6 text-center">Related Destinations</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {allCards.slice(0, 4).map((item) => (
-            <a href={`/wisata/${item.id}`}>
-               <div class="border p-4 rounded-lg shadow">{item.title}</div>
-            </a>
-          ))}
+      <article class="lg:col-span-2">
+        {tempat.url_foto && (
+          <div class="mb-8 rounded-2xl overflow-hidden border border-slate-800 shadow-xl">
+            <img 
+              src={tempat.url_foto} 
+              alt={tempat.dtw} 
+              class="w-full h-auto object-cover aspect-video"
+            />
+          </div>
+        )}
+
+        <h1 class="text-4xl font-bold mb-6 text-white">{tempat.dtw}</h1>
+        
+        <div class="prose prose-invert max-w-none whitespace-pre-line text-slate-300 leading-relaxed">
+          {tempat.deskripsi_lengkap}
         </div>
-      </div>
+        
+        <section class="mt-16 pt-8 border-t border-slate-800">
+          <h3 class="text-2xl font-bold mb-6 text-white">Ulasan Pengunjung</h3>
+          <div class="grid gap-4">
+            {ulasanData.length === 0 ? (
+              <p class="text-slate-500 italic">Belum ada ulasan untuk tempat ini.</p>
+            ) : (
+              ulasanData.map((u) => (
+                <div class="p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+                  <div class="flex justify-between font-bold text-teal-400">
+                    <span>{u.nama_user}</span>
+                    <span>{"⭐".repeat(u.rating)}</span>
+                  </div>
+                  <p class="text-slate-300 mt-2">{u.komentar}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+      </article>
+
+      <aside class="space-y-6">
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 sticky top-24">
+          <h4 class="font-bold text-white mb-4">Location Details (GIS)</h4>
+          <div class="text-sm space-y-2 mb-6">
+            <p class="text-slate-400">Latitude: <span class="text-white">{latitude}</span></p>
+            <p class="text-slate-400">Longitude: <span class="text-white">{longitude}</span></p>
+          </div>
+          
+          <a 
+            href={`https://www.google.com/maps?q=${latitude},${longitude}`}
+            target="_blank"
+            class="block w-full bg-teal-600 hover:bg-teal-500 text-white text-center py-3 rounded-xl font-bold transition-colors shadow-lg shadow-teal-900/20"
+          >
+            Buka Rute Perjalanan (LBS)
+          </a>
+        </div>
+      </aside>
+
     </div>
   </div>
 </MainLayout>

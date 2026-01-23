@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, date } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, varchar, date, timestamp } from 'drizzle-orm/pg-core';
 
 export const lokasiWisata = pgTable('lokasi_wisata', {
   id: serial('id').primaryKey(),
@@ -10,4 +10,13 @@ export const lokasiWisata = pgTable('lokasi_wisata', {
   tanggal: date('tanggal'), // Garis merah hilang karena 'date' sudah di-import di atas
   url_foto: text('url_foto'), // Kolom baru untuk link gambar
   deskripsi_lengkap: text('deskripsi_lengkap'), // Kolom baru untuk isi blog
+});
+
+export const ulasan = pgTable('ulasan', {
+  id: serial('id').primaryKey(),
+  lokasiId: integer('lokasi_id').references(() => lokasiWisata.id), // Relasi ke ID tempat
+  namaUser: text('nama_user'),
+  komentar: text('komentar'),
+  rating: integer('rating'),
+  createdAt: timestamp('created_at').defaultNow(),
 });

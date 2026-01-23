@@ -1,0 +1,74 @@
+---
+// src/components/ReviewCard.astro
+import FormattedDate from "./FormattedDate.astro";
+
+interface Props {
+  review: {
+    userName: string;
+    userImage?: string;
+    location: string;
+    rating: number;
+    pubDate: Date;
+    content: string;
+    images?: string[];
+  };
+}
+
+const { review } = Astro.props;
+
+// Mendapatkan inisial untuk avatar jika tidak ada foto
+const initials = review.userName
+  .split(" ")
+  .map((n) => n[0])
+  .join("");
+---
+
+<div class="bg-slate-900/40 backdrop-blur-sm border border-slate-700 p-8 rounded-[32px] shadow-xl hover:border-emerald-500/30 transition-all group">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div class="flex items-center gap-4">
+      {review.userImage ? (
+        <img src={review.userImage} alt={review.userName} class="w-12 h-12 rounded-full object-cover border-2 border-slate-700" />
+      ) : (
+        <div class="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center font-bold text-emerald-400 border border-emerald-500/20">
+          {initials}
+        </div>
+      )}
+      <div>
+        <h4 class="text-white font-bold leading-none mb-1">{review.userName}</h4>
+        <p class="text-slate-500 text-xs">
+          Reviewed <span class="text-slate-400"><FormattedDate date={review.pubDate} /></span>
+        </p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/5 rounded-full border border-emerald-500/10 text-emerald-400">
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path>
+        <circle cx="12" cy="10" r="3"></circle>
+      </svg>
+      <span class="text-[11px] font-bold uppercase tracking-wider">{review.location}</span>
+    </div>
+  </div>
+
+  <div class="flex gap-1 mb-4 text-emerald-400">
+    {[...Array(5)].map((_, i) => (
+      <span class="text-sm">{i < review.rating ? "★" : "☆"}</span>
+    ))}
+  </div>
+
+  <p class="text-slate-300 leading-relaxed text-sm italic mb-6">
+    "{review.content}"
+  </p>
+
+  {review.images && review.images.length > 0 && (
+    <div class="flex gap-3 overflow-hidden rounded-2xl">
+      {review.images.map((img) => (
+        <img 
+          src={img} 
+          alt="User attachment" 
+          class="w-24 h-24 object-cover rounded-xl border border-slate-700 hover:scale-105 transition-transform cursor-zoom-in"
+        />
+      ))}
+    </div>
+  )}
+</div>
