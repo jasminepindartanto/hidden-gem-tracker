@@ -1,15 +1,47 @@
 ---
-// WAJIB ADA TANDA INI DI BARIS PERTAMA
-import { getCollection } from "astro:content";
-import MainLayout from "../../layouts/MainLayout.astro";
+import MainLayout from "./../../layouts/MainLayout.astro";
 import RatingSummary from "../../components/RatingSummary.astro";
 import ReviewCard from "../../components/ReviewCard.astro";
+import sql from "@/lib/db";
 
-const allReviews = await getCollection("reviews");
-const sortedReviews = allReviews.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+// 1. Ambil data dari tabel 'ulasan' dan gabungkan dengan 'lokasi_wisata'
+const result = await sql`
+  SELECT 
+    u.id,
+    u.nama_user as author, 
+    u.rating, 
+    u.komentar as body, 
+    u.tanggal as pubDate,
+    l.dtw as location,
+    l.id as locationId
+  FROM ulasan u 
+  LEFT JOIN lokasi_wisata l ON u.lokasi_id = l.id 
+  ORDER BY u.tanggal DESC
+`;
+
+
+// 2. Map data dengan proteksi terhadap nilai 'undefined' atau 'null'
+const sortedReviews = result.map((rev) => {
+  const parsedDate = rev.pubDate ? new Date(rev.pubDate) : new Date();
+
+  return {
+    id: rev.id,
+    data: {
+      userName: rev.author || "Explorer",
+      rating: Number(rev.rating) || 0,
+      location: rev.location || "Destinasi",
+      content: rev.body || "",
+      pubDate: isNaN(parsedDate.getTime()) ? new Date() : parsedDate,
+      images: []
+    }
+  };
+});
 ---
 
-<MainLayout title="Community Stories">
+<MainLayout 
+  title="Community Stories" 
+  description="Baca ulasan terbaru dari komunitas Hidden Bandung."
+>
   <div class="px-4 md:px-12 max-w-5xl mx-auto py-16">
     <header class="mb-12">
       <h1 class="text-4xl font-bold text-white mb-2 font-noto-serif">Community Stories</h1>
@@ -30,12 +62,17 @@ const sortedReviews = allReviews.sort((a, b) => b.data.pubDate.valueOf() - a.dat
 
     <div class="space-y-6">
       {sortedReviews.length > 0 ? (
-        sortedReviews.map(review => <ReviewCard review={review.data} />)
+        sortedReviews.map(review => (
+        <div>
+        <ReviewCard review={review.data} />
+      </div>
+
+    
+        ))
       ) : (
-        <div class="text-center py-20 border-2 border-dashed border-slate-800 rounded-[32px]">
-          <p class="text-slate-500">Belum ada ulasan. Jadilah yang pertama bercerita!</p>
-        </div>
-      )}
+        <div class="text-center py-20">Belum ada ulasan.</div>
+          )
+      }
     </div>
   </div>
 </MainLayout>

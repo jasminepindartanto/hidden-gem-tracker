@@ -1,72 +1,49 @@
 ---
-import FormattedDate from "@/components/FormattedDate.astro";
-import LocationSidebar from "@/components/LocationSidebar.astro";
-import ShareButtons from "@/components/ShareButtons.astro";
-import { SITE_TITLE } from "@/consts";
 import MainLayout from "@/layouts/MainLayout.astro";
-import sql from "../../lib/db"; // Pastikan path ke koneksi db benar
+import FormattedDate from "@/components/FormattedDate.astro";
+import ShareButtons from "@/components/ShareButtons.astro";
+import sql from "@/lib/db";
+import { SITE_TITLE } from "@/consts";
 
 const { id } = Astro.params;
 
-// 1. Validasi ID untuk menghindari error ts(2769)
+// Validasi agar tidak error ts(2769)
 if (!id) return Astro.redirect("/404");
 
-// 2. Ambil data dari database
 const result = await sql`SELECT * FROM lokasi_wisata WHERE id = ${id}`;
 const post = result[0];
-
 if (!post) return Astro.redirect("/404");
 
-// 3. Ambil ulasan untuk fitur interaktif
 const ulasanData = await sql`SELECT * FROM ulasan WHERE lokasi_id = ${id} ORDER BY tanggal DESC`;
-
 const origin = Astro.url.origin;
-const pageTitle = `${post.dtw} | ${SITE_TITLE}`;
 ---
 
-<MainLayout title={pageTitle} description={post.deskripsi_lengkap}>
-  <article class="container px-4 md:px-6">
-    <div class="max-w-screen-lg mx-auto p-4">
-      <h1 class="text-white text-center mb-6">{post.dtw}</h1>
-      
-      <div class="text-center text-gray-500 mb-8">
-        <FormattedDate date={new Date(post.tanggal)} />
-      </div>
-
-      <div class="flex justify-end gap-2">
-        <ShareButtons url={`${origin}/blogs/${post.id}`} title={post.dtw} />
-      </div>
-      <hr class="border-slate-800 my-8" />
-    </div>
-
-    <div class="max-w-screen-xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12 p-4">
+<MainLayout title={`${post.dtw} | ${SITE_TITLE}`} description={post.deskripsi_lengkap}>
+  <article class="container mx-auto px-4 py-8">
+    {post.url_foto && (
+      <img src={post.url_foto} alt={post.dtw} class="w-full h-auto rounded-2xl mb-8" />
+    )}
+    <h1 class="text-4xl font-bold text-white mb-6 text-center">{post.dtw}</h1>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
       <div class="lg:col-span-2">
-        <div class="text-lg text-slate-300 leading-relaxed whitespace-pre-line mb-12">
+        <div class="text-slate-300 whitespace-pre-line leading-relaxed">
           {post.deskripsi_lengkap}
         </div>
-
-        <div class="mt-16 pt-8 border-t border-slate-800">
-          <h3 class="text-2xl font-bold text-white mb-6">Ulasan Pengunjung</h3>
-          {ulasanData.map((u) => (
-            <div class="p-4 bg-slate-800/50 rounded-lg border border-slate-700 mb-4">
-              <p class="font-bold text-teal-400">{u.nama_user} - {"⭐".repeat(u.rating)}</p>
-              <p class="text-slate-300 mt-2">{u.komentar}</p>
-            </div>
-          ))}
-        </div>
       </div>
 
-      <aside class="space-y-8 sticky top-24">
-        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800">
-          <h4 class="font-bold text-white mb-4">Location Details (GIS)</h4>
+      <aside>
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 sticky top-24">
+          <h4 class="text-white font-bold mb-4">GIS Details</h4>
           <p class="text-slate-400 text-sm">Lat: {post.latitude}</p>
           <p class="text-slate-400 text-sm">Lon: {post.longitude}</p>
+          
           <a 
-            href={`https://www.google.com/maps?q=${post.latitude},${post.longitude}`}
+            href={`https://www.google.com/maps/search/?api=1&query=${post.latitude},${post.longitude}`}
             target="_blank"
-            class="mt-6 block w-full bg-teal-600 text-white text-center py-3 rounded-xl font-bold"
+            class="block w-full bg-teal-600 text-white text-center py-3 rounded-xl mt-6 font-bold"
           >
-            Buka Rute (LBS)
+            Buka Rute Perjalanan
           </a>
         </div>
       </aside>

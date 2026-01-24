@@ -2,25 +2,23 @@
 // src/components/ReviewCard.astro
 import FormattedDate from "./FormattedDate.astro";
 
-interface Props {
-  review: {
-    userName: string;
-    userImage?: string;
-    location: string;
-    rating: number;
-    pubDate: Date;
-    content: string;
-    images?: string[];
-  };
+interface Review {
+  userName: string;
+  userImage?: string | null;
+  location: string;
+  rating: number;
+  pubDate: Date;
+  content: string;
+  images?: string[];
 }
 
-const { review } = Astro.props;
-
+const { review } = Astro.props as { review: Review };
 // Mendapatkan inisial untuk avatar jika tidak ada foto
-const initials = review.userName
+const initials = (review.userName ?? "Explorer")
   .split(" ")
   .map((n) => n[0])
   .join("");
+
 ---
 
 <div class="bg-slate-900/40 backdrop-blur-sm border border-slate-700 p-8 rounded-[32px] shadow-xl hover:border-emerald-500/30 transition-all group">

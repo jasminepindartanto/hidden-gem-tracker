@@ -4,28 +4,47 @@ import BlogCard from "@/components/blog/BlogCard.astro";
 import CardCover from "@/components/knowledge-card/CardCover.astro";
 import HeroSection from "@/components/landing-page/HeroSection.astro";
 import LatestSection from "@/components/landing-page/LatestSection.astro";
-import ProductSection from "@/components/ProductSection.astro";
-import SlideCard from "@/components/slide/SlideCard.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "@/consts";
 import MainLayout from "@/layouts/MainLayout.astro";
+import sql from "@/lib/db";
 
-const allPosts = (await getCollection("blogs"))
-  .map((post) => ({
-    id: post.id,
-    title: post.data.title,
-    description: post.data.description,
-    pubDate: post.data.pubDate,
-    tags: post.data.tags,
-    updatedDate: post.data.updatedDate,
-    author: post.data.author,
-    metadata: post.data.metadata,
-    // Pastikan data ini tetap diangkut agar BlogCard tidak kosong
-    rating: post.data.rating,
-    image: post.data.image,
-    location: post.data.location,
-  }))
-  .sort((a, b) => b.pubDate.valueOf() - a.pubDate.valueOf());
+// 1. Ambil data DESTINASI dari DATABASE
+const dbResult = await sql`SELECT * FROM lokasi_wisata ORDER BY tanggal DESC LIMIT 3`;
 
+const posts = dbResult.map((item) => ({
+  id: item.id.toString(),
+  title: item.dtw,
+  rating: Number(item.rating),
+  location: item.lokasi,
+  description: item.deskripsi_lengkap?.substring(0, 100) + "...", 
+  image: item.url_foto,
+  pubDate: new Date(item.tanggal),
+  author: item.author || "Admin",
+  tags: item.tags || []
+}));
+
+// 2. LOGIKA NEAR YOU: Menghitung jarak dari Coblong (-6.8844, 107.6135)
+const nearYouResult = await sql`
+  SELECT *, 
+  (6371 * acos(cos(radians(-6.8844)) * cos(radians(latitude)) * cos(radians(longitude) - radians(107.6135)) + sin(radians(-6.8844)) * sin(radians(latitude)))) AS jarak
+  FROM lokasi_wisata 
+  ORDER BY jarak ASC 
+  LIMIT 4
+`;
+
+const recentReviews = await sql`
+  SELECT 
+    u.nama_user, 
+    u.rating, 
+    u.komentar, 
+    l.dtw as nama_lokasi 
+  FROM ulasan u 
+  LEFT JOIN lokasi_wisata l ON u.lokasi_id = l.id 
+  ORDER BY u.tanggal DESC
+  LIMIT 3
+`;
+
+// 2. Ambil data CARDS & SLIDES (Masih Statis dari Content Collection)
 const allCards = (await getCollection("cards"))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .map((card) => ({
@@ -34,6 +53,7 @@ const allCards = (await getCollection("cards"))
     template: card.data.template,
     tags: card.data.tags,
   }));
+  
 
 const allSlides = (await getCollection("slides"))
   .filter((slide) => slide.data.pubDate)
@@ -43,36 +63,28 @@ const allSlides = (await getCollection("slides"))
     title: slide.data.title,
     description: slide.data.description,
     author: slide.data.author,
-    transition: slide.data.transition,
-    theme: slide.data.theme,
     pubDate: slide.data.pubDate,
     tags: slide.data.tags,
   }));
 
+// 3. Gabungkan semua Tags untuk Hero Search
 const allTags = [
-  ...allPosts.flatMap((post) => post.tags || []),
+  ...posts.flatMap((post) => post.tags || []),
   ...allCards.flatMap((card) => card.tags || []),
   ...allSlides.flatMap((slide) => slide.tags || []),
 ];
 const uniqueTags = [...new Set(allTags)];
 
-const posts = allPosts.slice(0, 3);
 const cards = allCards.slice(0, 6);
-const slides = allSlides.slice(0, 6);
 
-// Get active doodle
+// 4. Ambil Active Doodle
 const now = new Date();
 const activeDoodleEntry = (await getCollection("doodles"))
   .filter((doodle) => doodle.data.pubDate <= now && doodle.data.endDate >= now)
-  .sort((a, b) => {
-    return b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
-  })[0];
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())[0];
 
 const activeDoodle = activeDoodleEntry
-  ? {
-      ...activeDoodleEntry.data,
-      href: `/doodles/${activeDoodleEntry.id}`,
-    }
+  ? { ...activeDoodleEntry.data, href: `/doodles/${activeDoodleEntry.id}` }
   : undefined;
 ---
 
@@ -103,115 +115,69 @@ const activeDoodle = activeDoodleEntry
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-16">
-        {[
-          { title: "Masagi Coffee", dist: "0.8 km", cat: "Cafe", rat: "4.6", img: "/images/masagi.jpg" },
-          { title: "Warung Langit", dist: "1.2 km", cat: "Views", rat: "4.5", img: "/images/warung.jpg" },
-          { title: "Selasar Sunaryo", dist: "2.1 km", cat: "Art", rat: "4.9", img: "/images/selasar.jpg" },
-          { title: "The Lodge Maribaya", dist: "3.5 km", cat: "Nature", rat: "4.4", img: "/images/lodge.jpg" }
-        ].map((item) => (
-          <div class="flex items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer group">
+        {nearYouResult.map((item) => (
+          <a href={`/blogs/${item.id}`} class="flex items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer group">
             <div class="w-16 h-16 rounded-xl bg-slate-200 overflow-hidden flex-shrink-0">
-              <img src={item.img} alt={item.title} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+              <img 
+                src={item.url_foto} 
+                alt={item.dtw} 
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
+              />
             </div>
             <div class="overflow-hidden">
-              <h4 class="font-bold text-slate-800 text-sm truncate">{item.title}</h4>
-              <p class="text-[11px] text-slate-500 mt-0.5">{item.dist} away • {item.cat}</p>
+              <h4 class="font-bold text-slate-800 text-sm truncate">{item.dtw}</h4>
+              <p class="text-[11px] text-slate-500 mt-0.5">
+                {item.jarak.toFixed(1)} km away • {(item.lokasi || "").split(',')[0]}
+              </p>
               <div class="flex items-center gap-1 mt-1.5">
                 <span class="text-yellow-400 text-[11px]">⭐</span>
-                <span class="text-[11px] font-bold text-slate-700">{item.rat}</span>
+                <span class="text-[11px] font-bold text-slate-700">{Number(item.rating).toFixed(1)}</span>
               </div>
             </div>
-          </div>
+          </a>
         ))}
       </div>
 
       <div class="relative overflow-hidden rounded-[40px] bg-[#2D4A3E] p-12 md:p-20 text-center shadow-2xl">
         <div class="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 to-transparent opacity-40"></div>
-        <div class="absolute -top-24 -right-24 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl"></div>
-
         <div class="relative z-10 flex flex-col items-center">
-          <span class="text-[11px] uppercase tracking-[0.4em] text-emerald-300/70 font-bold mb-6">
-            Discover Visually
-          </span>
-          <h2 class="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight">
-            Explore the Interactive Map
-          </h2>
-          <p class="text-emerald-100/60 text-base md:text-lg max-w-2xl mb-12 leading-relaxed">
-            Navigate through the hidden corners of Bandung. Use our live map to see what's trending and find spots near you.
-          </p>
-
-          <a 
-            href="/travelmap" 
-            class="flex items-center gap-3 bg-white text-[#2D4A3E] px-10 py-4.5 rounded-full font-bold shadow-xl hover:bg-emerald-50 transition-all transform hover:scale-105 active:scale-95"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83a1 1 0 0 1 1.447.894v12.764a2 2 0 0 1-1.106 1.789l-4.789 2.394a2 2 0 0 1-1.788 0l-3.659-1.83a2 2 0 0 0-1.788 0l-4.789 2.394a1 1 0 0 1-1.447-.894V6.342a2 2 0 0 1 1.106-1.789l4.789-2.394a2 2 0 0 1 1.788 0z"/>
-              <path d="M15 7v14"/><path d="M9 3v14"/>
-            </svg>
+          <h2 class="text-4xl md:text-6xl font-bold text-white mb-6 tracking-tight">Explore the Interactive Map</h2>
+          <a href="/travelmap" class="flex items-center gap-3 bg-white text-[#2D4A3E] px-10 py-4.5 rounded-full font-bold shadow-xl hover:bg-emerald-50 transition-all transform hover:scale-105 active:scale-95">
             Open Interactive Map
           </a>
         </div>
       </div>
     </section>
+
     <section class="mt-24 mb-24">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
-        <div>
-          <h2 class="text-3xl font-bold text-white mb-2 font-noto-serif">Recent Community Reviews</h2>
-          <p class="text-slate-400 text-sm">What explorers are saying about their latest findings.</p>
-        </div>
-        
-        <a 
-          href="/reviews" 
-          class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-slate-700 text-white text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-slate-900 transition-all active:scale-95 shadow-lg shadow-black/20"
-        >
-          View All Reviews
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-        </a>
+        <h2 class="text-3xl font-bold text-white mb-2 font-noto-serif">Recent Community Reviews</h2>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[
-          { 
-            name: "Ariana D.", 
-            loc: "Lawangwangi Creative Space", 
-            text: "The sunset view from the deck is unmatched. Perfect blend of art gallery and cafe atmosphere.", 
-            stars: 5 
-          },
-          { 
-            name: "Rizky S.", 
-            loc: "Tebing Keraton", 
-            text: "Go before 5 AM for the sunrise. It's magical but can get quite chilly. Bring a jacket!", 
-            stars: 4 
-          },
-          { 
-            name: "Maya L.", 
-            loc: "Kopi Toko Djawa", 
-            text: "Love the vintage vibes here. The Es Kopi Awan is a must-try for any coffee lover visiting Braga.", 
-            stars: 5 
-          }
-        ].map((rev) => (
+        {recentReviews.map((rev) => (
           <div class="bg-white p-8 rounded-[32px] shadow-sm hover:shadow-md transition-all border border-slate-100 flex flex-col justify-between">
             <div>
               <div class="flex items-center gap-4 mb-6">
-                <div class="w-12 h-12 rounded-full bg-[#1e2f28] flex items-center justify-center font-bold text-emerald-100 text-sm">
-                  {rev.name.split(' ').map(n => n[0]).join('')}
+                <div class="w-12 h-12 rounded-full bg-[#1e2f28] flex items-center justify-center font-bold text-emerald-100 text-sm uppercase">
+                  {rev.nama_user.substring(0, 2)}
                 </div>
                 <div>
-                  <p class="text-slate-900 font-bold text-sm leading-none mb-1">{rev.name}</p>
-                  <p class="text-slate-500 text-[11px]">Reviewing: <span class="font-medium text-slate-700">{rev.loc}</span></p>
+                  <p class="text-slate-900 font-bold text-sm leading-none mb-1">{rev.nama_user}</p>
+                  <p class="text-slate-500 text-[11px]">Reviewing: <span class="font-medium text-slate-700">{rev.nama_lokasi}</span></p>
                 </div>
               </div>
               
               <div class="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <span class={`text-[12px] ${i < rev.stars ? 'text-yellow-400' : 'text-slate-200'}`}>
+                  <span class={`text-[12px] ${i < rev.rating ? 'text-yellow-400' : 'text-slate-200'}`}>
                     ★
                   </span>
                 ))}
               </div>
 
               <p class="text-slate-600 text-sm italic leading-relaxed">
-                "{rev.text}"
+                "{rev.komentar}"
               </p>
             </div>
           </div>

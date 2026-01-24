@@ -1,23 +1,51 @@
 ---
 import MainLayout from "../../layouts/MainLayout.astro";
 import CardCover from "@/components/knowledge-card/CardCover.astro";
+import BlogCard from "@/components/blog/BlogCard.astro";
 import { SITE_TITLE } from "@/consts";
-import sql from "@/lib/db";
+import sql from "@/lib/db"; 
 
-// Ambil data langsung dari database
-const dbCards = await sql`SELECT id, dtw as title FROM lokasi_wisata ORDER BY id ASC`;
+// 1. Ambil data lengkap dari database 'hidden'
+const result = await sql`SELECT * FROM lokasi_wisata ORDER BY tanggal DESC`;
+
+// 2. Map data DB agar kompatibel dengan komponen UI
+const allDestinations = result.map((item) => ({
+  id: item.id.toString(),
+  title: item.dtw,           // Mapping kolom 'dtw' ke 'title'
+  rating: Number(item.rating),
+  location: item.lokasi,
+  description: item.deskripsi_lengkap?.substring(0, 150) + "...", 
+  image: item.url_foto,      // Link Picsum dari database
+  pubDate: new Date(item.tanggal),
+  author: item.author || "Admin",
+  tags: item.tags,
+  showExtraDetails: item.show_extra_details,
+  // Tambahkan koordinat untuk keperluan navigasi LBS nanti
+  latitude: item.latitude,
+  longitude: item.longitude
+}));
 ---
 
 <MainLayout 
   title={`Destinasi Wisata | ${SITE_TITLE}`} 
-  description="Daftar lengkap destinasi wisata di Bandung yang diambil langsung dari database."
+  description="Daftar lengkap destinasi wisata Bandung dari database."
 >
   <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-8 text-center">Destinasi Wisata</h1>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {dbCards.map((card) => (
-        <a href={`/cards/${card.id}`}>
-          <CardCover title={card.title} template="blackWhite" />
+    <h1 class="text-3xl font-bold mb-12 text-center text-white">Destinasi Wisata</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+      {allDestinations.map((post) => (
+        <BlogCard blog={post} />
+      ))}
+    </div>
+
+    <hr class="border-slate-800 mb-16" />
+
+    <h2 class="text-2xl font-bold mb-8 text-slate-400">Quick Navigation</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {allDestinations.map((card) => (
+        <a href={`/wisata/${card.id}`} class="hover:scale-105 transition-transform">
+          <CardCover title={card.title} template="blackWhite" size="small" />
         </a>
       ))}
     </div>

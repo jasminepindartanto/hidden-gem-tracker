@@ -1,15 +1,24 @@
 ---
 // src/components/RatingSummary.astro
+interface Props {
+  allReviews: {
+    data: {
+      rating: number;
+    }
+  }[];
+}
+
 const { allReviews } = Astro.props;
 
+
 const total = allReviews.length;
-// Mencegah NaN: Jika total 0, maka rata-rata 0
 const average = total > 0 
-  ? (allReviews.reduce((acc, rev) => acc + rev.data.rating, 0) / total).toFixed(1) 
+  // Tambahkan tipe eksplisit (acc: number, rev: any)
+  ? (allReviews.reduce((acc: number, rev: any) => acc + rev.data.rating, 0) / total).toFixed(1) 
   : "0.0";
 
 const distribution = [5, 4, 3, 2, 1].map(star => {
-  const count = allReviews.filter(rev => rev.data.rating === star).length;
+  const count = allReviews.filter((rev: any) => rev.data.rating === star).length;
   const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
   return { star, count, percentage };
 });

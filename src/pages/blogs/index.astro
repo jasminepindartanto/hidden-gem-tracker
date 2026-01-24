@@ -1,10 +1,32 @@
 ---
-import ContentIndexLayout from "../../layouts/ContentIndexLayout.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+import BlogCard from "@/components/blog/BlogCard.astro";
+import sql from "@/lib/db";
+import { SITE_TITLE } from "@/consts";
+
+// Ambil SEMUA data untuk daftar kartu
+const result = await sql`SELECT * FROM lokasi_wisata ORDER BY tanggal DESC`;
+
+const allBlogs = result.map((item) => ({
+  id: item.id.toString(),
+  title: item.dtw,
+  rating: Number(item.rating),
+  location: item.lokasi,
+  description: item.deskripsi_lengkap?.substring(0, 150) + "...", 
+  image: item.url_foto, // Link Picsum dari DB
+  pubDate: new Date(item.tanggal),
+  author: item.author || "Admin",
+  showExtraDetails: true
+}));
 ---
 
-<ContentIndexLayout
-  collectionType="blogs"
-  title="Articles"
-  description="Practical guides, in-depth technical pieces, and lessons from real projects."
-  defaultLimit={12}
-/>
+<MainLayout title={`Destinasi | ${SITE_TITLE}`} description="Daftar Wisata">
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8 text-white text-center">Destinasi Wisata</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {allBlogs.map((post) => (
+        <BlogCard blog={post} />
+      ))}
+    </div>
+  </div>
+</MainLayout>
