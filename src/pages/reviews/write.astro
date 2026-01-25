@@ -1,32 +1,32 @@
 ---
-import { getCollection } from "astro:content";
 import MainLayout from "./../../layouts/MainLayout.astro";
+import sql from "@/lib/db"; // Gunakan koneksi database Anda
 
-const allDestinations = await getCollection("blogs");
+// Ambil destinasi dari DB agar lokasi_id sesuai dengan tabel lokasi_wisata
+const allDestinations = await sql`SELECT id, dtw FROM lokasi_wisata ORDER BY dtw ASC`;
+
 ---
 
-<MainLayout title="Write a Review">
+<MainLayout title="Write a Review" description="berikan ulasan terbaru dari komunitas Hidden Bandung.">
   <div class="px-6 md:px-16 max-w-7xl mx-auto py-12">
     <header class="mb-10">
       <h1 class="text-4xl font-bold text-white mb-2 font-noto-serif">Share Your Experience</h1>
       <p class="text-slate-400">Tell the community about your latest discovery in Bandung.</p>
     </header>
 
-    <form class="bg-slate-900/50 border border-slate-700 p-8 md:p-12 rounded-[48px] backdrop-blur-md shadow-2xl">
+    <form 
+      action="/api/ulasan" 
+      method="POST" 
+      class="bg-slate-900/50 border border-slate-700 p-8 md:p-12 rounded-[48px] backdrop-blur-md shadow-2xl"
+    >
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
-        
         <div class="space-y-8">
-          <div class="space-y-8">
+          <div class="space-y-4">
             <label class="text-sm font-bold text-slate-300 ml-1">Where did you go?</label>
-            <div class="relative">
-              <select class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-5 py-4 text-white focus:border-emerald-500 outline-none appearance-none cursor-pointer transition-all">
-                <option value="" disabled selected>Select a destination</option>
-                {allDestinations.map(dest => <option value={dest.id}>{dest.data.title}</option>)}
-              </select>
-              <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-              </div>
-            </div>
+            <select name="lokasi_id" required class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-5 py-4 text-white outline-none appearance-none cursor-pointer transition-all">
+              <option value="" disabled selected>Select a destination</option>
+              {allDestinations.map(dest => <option value={dest.id}>{dest.dtw}</option>)}
+            </select>
           </div>
 
           <div class="space-y-4 p-6 bg-slate-800/40 rounded-3xl border border-slate-700/50 text-center">
@@ -36,15 +36,17 @@ const allDestinations = await getCollection("blogs");
                 <button type="button" data-value={star} class="star-btn text-slate-700 hover:scale-110 transition-all">★</button>
               ))}
             </div>
-            <input type="hidden" name="rating" id="rating-input" value="0" />
+            <input type="hidden" name="rating" id="rating-input" value="0" required />
           </div>
 
           <div class="space-y-2">
-            <label class="text-sm font-bold text-slate-300 ml-1">Review Title</label>
+            <label class="text-sm font-bold text-slate-300 ml-1">Your Name</label>
             <input 
+              name="nama_user" 
               type="text" 
-              placeholder="Ex: Amazing sunset spot!"
-              class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-5 py-4 text-white focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600"
+              required 
+              placeholder="Ex: Cindy Nur" 
+              class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-5 py-4 text-white outline-none" 
             />
           </div>
         </div>
@@ -53,31 +55,21 @@ const allDestinations = await getCollection("blogs");
           <div class="space-y-2">
             <label class="text-sm font-bold text-slate-300 ml-1">Your Review</label>
             <textarea 
-              rows="6"
-              placeholder="What made this place special? Share your tips..."
-              class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-5 py-4 text-white focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600 resize-none"
+              name="komentar" 
+              rows="6" 
+              required 
+              placeholder="What made this place special?" 
+              class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-5 py-4 text-white outline-none resize-none"
             ></textarea>
-          </div>
-
-          <div class="space-y-2">
-            <label class="text-sm font-bold text-slate-300 ml-1">Add Photos</label>
-            <div class="border-2 border-dashed border-slate-700 rounded-3xl p-8 flex flex-col items-center justify-center gap-3 bg-slate-800/20 hover:bg-slate-800/40 transition-all cursor-pointer group h-[160px]">
-              <div class="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              </div>
-              <p class="text-white font-bold text-xs text-center">Click to upload photos</p>
-            </div>
           </div>
         </div>
       </div>
 
       <div class="flex flex-col md:flex-row-reverse gap-6 mt-16 pt-10 border-t border-slate-800">
-        <button type="submit" class="md:w-56 py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-2xl font-bold transition-all shadow-lg active:scale-95">
+        <button type="submit" class="md:w-56 py-4 bg-emerald-500 text-slate-950 rounded-2xl font-bold transition-all shadow-lg active:scale-95">
           Submit Review
         </button>
-        <a href="/reviews" class="md:w-32 py-4 text-center text-slate-400 hover:text-white transition-all font-bold text-sm uppercase tracking-widest">
-          Cancel
-        </a>
+        <a href="/reviews" class="md:w-32 py-4 text-center text-slate-400 font-bold text-sm uppercase">Cancel</a>
       </div>
     </form>
 

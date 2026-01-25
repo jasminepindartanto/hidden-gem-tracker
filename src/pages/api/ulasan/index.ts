@@ -1,25 +1,46 @@
 import type { APIRoute } from "astro";
 import sql from "@/lib/db";
 
-// POST: Menyimpan ulasan baru dari user ke database
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, redirect }) => { // Tambahkan redirect di sini
   try {
-    const data = await request.json();
-    const { lokasiId, namaUser, rating, komentar } = data;
+    const formData = await request.formData();
 
-    // Validasi data sederhana
-    if (!lokasiId || !namaUser || !rating) {
-      return new Response(JSON.stringify({ message: "Data tidak lengkap" }), { status: 400 });
+    const lokasiIdRaw = formData.get("lokasi_id");
+    const namaUserRaw = formData.get("nama_user");
+    const ratingRaw = formData.get("rating");
+    const komentarRaw = formData.get("komentar");
+
+    if (!lokasiIdRaw || !namaUserRaw || !ratingRaw) {
+      return new Response(
+        JSON.stringify({ message: "Data tidak lengkap" }),
+        { status: 400 }
+      );
     }
 
-    // Insert ke tabel ulasan di PostgreSQL
+    const lokasiId = Number(lokasiIdRaw);
+    const namaUser = String(namaUserRaw);
+    const rating = Number(ratingRaw);
+    const komentar = komentarRaw ? String(komentarRaw) : null;
+
+
+    if (!lokasiId || !namaUser || !rating) {
+      return new Response(JSON.stringify({ message: "Data tidak lengkap" }), {
+        status: 400,
+      });
+    }
+
     await sql`
       INSERT INTO ulasan (lokasi_id, nama_user, rating, komentar)
       VALUES (${lokasiId}, ${namaUser}, ${rating}, ${komentar})
     `;
 
-    return new Response(JSON.stringify({ message: "Ulasan berhasil dikirim!" }), { status: 201 });
-  } catch (error) {
-    return new Response(JSON.stringify({ message: "Server Error", error }), { status: 500 });
+   return redirect("/reviews", 303); 
+
+  } catch (error: any) {
+    console.error(error);
+    return new Response(
+      JSON.stringify({ message: "Server Error", error: error.message }),
+      { status: 500 }
+    );
   }
 };

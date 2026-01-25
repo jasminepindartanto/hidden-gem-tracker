@@ -12,6 +12,43 @@ export const onRequest = defineMiddleware(async (context, next) => {
         'unsafe-eval'
         'unsafe-inline';
 
+      Content-Security-Policy:
+      script-src
+        'self'
+        https://maps.googleapis.com
+        https://maps.gstatic.com
+        'unsafe-eval';
+
+        default-src 'self';
+
+        script-src
+          'self'
+          https://maps.googleapis.com
+          https://maps.gstatic.com
+          'unsafe-eval'
+          'unsafe-inline';
+
+        style-src
+          'self'
+          'unsafe-inline'
+          https://fonts.googleapis.com;
+
+        img-src
+          'self'
+          data:
+          blob:
+          https://maps.googleapis.com
+          https://maps.gstatic.com;
+
+        font-src
+          'self'
+          https://fonts.gstatic.com;
+
+        connect-src
+          'self'
+          https://maps.googleapis.com;
+
+
       style-src 'self'
         'unsafe-inline'
         https://fonts.googleapis.com;
