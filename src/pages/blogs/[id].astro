@@ -2,49 +2,108 @@
 import MainLayout from "@/layouts/MainLayout.astro";
 import FormattedDate from "@/components/FormattedDate.astro";
 import ShareButtons from "@/components/ShareButtons.astro";
+import ContentNavigation from "@/components/navigation/ContentNavigation.astro";
+import LocationSidebar from "@/components/LocationSidebar.astro";
 import sql from "@/lib/db";
 import { SITE_TITLE } from "@/consts";
 
 const { id } = Astro.params;
 
-// Validasi agar tidak error ts(2769)
+// 1. Proteksi jika ID tidak ada
 if (!id) return Astro.redirect("/404");
 
+// 2. Ambil data utama destinasi dari database
 const result = await sql`SELECT * FROM lokasi_wisata WHERE id = ${id}`;
 const post = result[0];
+
 if (!post) return Astro.redirect("/404");
 
+// 3. Ambil data ulasan terkait
 const ulasanData = await sql`SELECT * FROM ulasan WHERE lokasi_id = ${id} ORDER BY tanggal DESC`;
+
+// 4. Logika Navigasi (Mencari konten sebelum & sesudah)
+const allDestinations = await sql`SELECT id, dtw FROM lokasi_wisata ORDER BY id ASC`;
+const currentIndex = allDestinations.findIndex(d => d.id === post.id);
+
+const adjacentContent = {
+  previous: allDestinations[currentIndex - 1] || null, // Gunakan 'previous'
+  next: allDestinations[currentIndex + 1] || null
+};
+
 const origin = Astro.url.origin;
 ---
 
-<MainLayout title={`${post.dtw} | ${SITE_TITLE}`} description={post.deskripsi_lengkap}>
+<MainLayout 
+  title={`${post.dtw} | ${SITE_TITLE}`} 
+  description={post.deskripsi_lengkap?.substring(0, 160)}
+  type="article"
+  author={post.author || "Admin"}
+  publishedTime={new Date(post.tanggal).toISOString()}
+>
   <article class="container mx-auto px-4 py-8">
+    <div class="max-w-screen-lg mx-auto p-4">
+      <div class="mb-4 py-4 text-center">
+        <h1 class="text-4xl md:text-6xl font-serif text-white font-bold mb-4">{post.dtw}</h1>
+        <div class="text-gray-500 mb-6">
+          <FormattedDate date={new Date(post.tanggal)} />
+          <span class="mx-2">•</span>
+          <span>Oleh {post.author || "Admin"}</span>
+        </div>
+        
+        <div class="flex items-center justify-between py-4 border-y border-slate-800">
+           <div class="flex items-center gap-2">
+            <span class="bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full text-xs font-bold border border-emerald-500/20">
+              ⭐ {Number(post.rating).toFixed(1)}
+            </span>
+          </div>
+          <ShareButtons
+            url={`${origin}/blogs/${post.id}`}
+            title={post.dtw}
+            description={post.deskripsi_lengkap?.substring(0, 100)}
+          />
+        </div>
+      </div>
+    </div>
+
     {post.url_foto && (
-      <img src={post.url_foto} alt={post.dtw} class="w-full h-auto rounded-2xl mb-8" />
+      <img 
+        src={post.url_foto} 
+        alt={post.dtw} 
+        class="w-full max-h-[550px] object-cover rounded-[40px] mb-12 shadow-2xl" 
+      />
     )}
-    <h1 class="text-4xl font-bold text-white mb-6 text-center">{post.dtw}</h1>
     
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-screen-xl mx-auto">
       <div class="lg:col-span-2">
-        <div class="text-slate-300 whitespace-pre-line leading-relaxed">
+        <div class="prose prose-invert max-w-none text-slate-300 text-lg leading-relaxed whitespace-pre-line">
           {post.deskripsi_lengkap}
+        </div>
+
+        <div class="mt-20 pt-10 border-t border-slate-800">
+          <h3 class="text-2xl font-bold text-white mb-8 font-noto-serif">Cerita Pengunjung</h3>
+          <div class="space-y-6">
+            {ulasanData.length > 0 ? ulasanData.map((rev) => (
+              <div class="bg-slate-900/40 p-6 rounded-3xl border border-slate-700/30">
+                <div class="flex justify-between items-center mb-3">
+                  <span class="font-bold text-white">{rev.nama_user}</span>
+                  <div class="text-emerald-400 text-sm">{"★".repeat(rev.rating)}</div>
+                </div>
+                <p class="text-slate-400 italic text-sm">"{rev.komentar || "Sangat direkomendasikan!"}"</p>
+              </div>
+            )) : (
+              <p class="text-slate-500 italic">Jadilah yang pertama berbagi cerita di sini.</p>
+            )}
+          </div>
+        </div>
+
+        <div class="mt-16">
+          <ContentNavigation adjacentContent={adjacentContent} contentType="blogs" />
         </div>
       </div>
 
-      <aside>
-        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 sticky top-24">
-          <h4 class="text-white font-bold mb-4">GIS Details</h4>
-          <p class="text-slate-400 text-sm">Lat: {post.latitude}</p>
-          <p class="text-slate-400 text-sm">Lon: {post.longitude}</p>
-          
-          <a 
-            href={`https://www.google.com/maps/search/?api=1&query=${post.latitude},${post.longitude}`}
-            target="_blank"
-            class="block w-full bg-teal-600 text-white text-center py-3 rounded-xl mt-6 font-bold"
-          >
-            Buka Rute Perjalanan
-          </a>
+      <aside class="space-y-8">
+        <div class="sticky top-24 space-y-8">
+          <LocationSidebar post={post} /> 
         </div>
       </aside>
     </div>

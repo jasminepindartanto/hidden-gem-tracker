@@ -101,8 +101,9 @@ async function generateCardOg(
                 fontFamily:
                   cardTheme.titleFontFamily ||
                   "'Inter', 'Noto Sans SC', system-ui, sans-serif",
-                letterSpacing: -0.5,
+                letterSpacing: "normal",
                 lineHeight: 1.2,
+                display: "flex", // Tambahkan ini jika ingin kontrol lebih baik
                 wordWrap: "break-word",
                 overflowWrap: "break-word",
                 hyphens: "auto",

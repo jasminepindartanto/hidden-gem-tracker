@@ -11,12 +11,11 @@
     "astro": "^5.12.0"
   },
   "scripts": {
-  "dev": "astro dev",
-  "build": "astro build",
-  "preview": "astro preview",
-  "db:push": "drizzle-kit push"
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "db:push": "drizzle-kit push"
   },
-
   "dependencies": {
     "@astrojs/check": "^0.9.4",
     "@astrojs/mdx": "^4.3.6",
@@ -29,6 +28,7 @@
     "animejs": "^4.1.4",
     "astro": "^5.14.0",
     "astro-social-share": "^2.2.0",
+    "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.1",
     "js-base64": "^3.7.8",

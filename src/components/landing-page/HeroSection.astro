@@ -83,7 +83,29 @@ const doodleEmoji =
               </p>
             </>
           )}
-        </div>
+
+          <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <a 
+              href="/login" 
+              class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-2xl font-bold text-lg transition-all shadow-lg active:scale-95 tracking-tight"
+            >
+              <span class="leading-none">Get Started</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+              </svg>
+            </a>
+
+            <a 
+              href="/blogs" 
+              class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-slate-900/50 backdrop-blur-sm hover:bg-slate-800 text-white border border-slate-700 rounded-2xl font-bold text-lg transition-all tracking-tight"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+              </svg>
+              <span class="leading-none">Explore Destinations</span>
+            </a>
+          </div>
+      </div>
 
 
         {doodle && (

@@ -1,0 +1,62 @@
+---
+import MainLayout from "@/layouts/MainLayout.astro";
+import { Mail, Lock, LogIn } from "lucide-react";
+---
+
+<MainLayout title="Login | Hidden Bandung" description="Masuk ke akun Anda">
+  <div class="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-950 px-4">
+    <div class="w-full max-w-md">
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-white tracking-tight mb-2">Welcome Back</h1>
+        <p class="text-slate-400">Sign in to continue your adventure</p>
+      </div>
+
+      <div class="bg-slate-900/50 border border-slate-800 p-8 rounded-[32px] backdrop-blur-md shadow-2xl">
+        <form method="POST" action="/api/auth" class="space-y-5">
+          <input type="hidden" name="mode" value="signin" />
+
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-300 ml-1">Email Address</label>
+            <div class="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+              <input 
+                name="email" 
+                type="email" 
+                required 
+                placeholder="name@example.com" 
+                class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-12 pr-5 py-4 text-white outline-none focus:border-emerald-500 transition-all"
+              />
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-semibold text-slate-300 ml-1">Password</label>
+            <div class="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-500" />
+              <input 
+                name="password" 
+                type="password" 
+                required 
+                placeholder="••••••••" 
+                class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-12 pr-5 py-4 text-white outline-none focus:border-emerald-500 transition-all"
+              />
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            class="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-2xl font-bold text-lg transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 tracking-tight"
+          >
+            Sign In
+            <LogIn className="h-5 w-5" />
+          </button>
+        </form>
+
+        <p class="mt-8 text-center text-sm text-slate-500">
+          Belum punya akun? 
+          <a href="/signup" class="text-emerald-500 font-bold hover:underline ml-1 tracking-tight">Daftar sekarang</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</MainLayout>

@@ -1,0 +1,27 @@
+---
+import sql from "@/lib/db";
+
+const { id } = Astro.params;
+
+if (!id) {
+  throw new Error("ID required");
+}
+
+const [user] = await sql`
+  SELECT id, email, display_name
+  FROM users
+  WHERE id = ${id}
+`;
+---
+
+<h1>User Profile</h1>
+
+{user ? (
+  <ul>
+    <li>ID: {user.id}</li>
+    <li>Email: {user.email}</li>
+    <li>Name: {user.display_name}</li>
+  </ul>
+) : (
+  <p>User not found</p>
+)}

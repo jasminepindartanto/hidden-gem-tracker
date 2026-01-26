@@ -1,0 +1,54 @@
+---
+import MainLayout from "@/layouts/MainLayout.astro";
+import sql from "@/lib/db";
+---
+
+<MainLayout 
+  title="Authentication"
+  description="Login or register to Hidden Bandung"
+>
+  <div class="min-h-screen flex items-center justify-center px-4">
+    <form
+      action="/api/auth"
+      method="POST"
+      class="w-full max-w-md bg-slate-900 p-8 rounded-2xl space-y-5"
+    >
+      <h1 class="text-2xl font-bold text-center text-white" id="form-title">
+        Welcome Back
+      </h1>
+
+      <input type="hidden" name="mode" id="mode" value="signin" />
+
+      <div id="displayNameField" class="hidden">
+        <label class="text-sm text-slate-300">Display Name</label>
+        <input name="displayName" class="w-full p-3 rounded bg-slate-800 text-white" />
+      </div>
+
+      <div>
+        <label class="text-sm text-slate-300">Email</label>
+        <input name="email" type="email" required class="w-full p-3 rounded bg-slate-800 text-white" />
+      </div>
+
+      <div>
+        <label class="text-sm text-slate-300">Password</label>
+        <input name="password" type="password" required minlength="6"
+          class="w-full p-3 rounded bg-slate-800 text-white" />
+      </div>
+
+      <button class="w-full bg-emerald-500 py-3 rounded font-bold text-slate-900">
+        Submit
+      </button>
+
+     <p class="text-center text-sm text-slate-400">
+        <a href="/signup" class="text-emerald-400">
+            Switch to Sign Up
+        </a>
+    </p>
+
+    </form>
+  </div>
+
+  <script src="/scripts/auth-toggle.js"></script>
+
+  <script is:inline src="/scripts/auth-toggle.js"></script>
+</MainLayout>
