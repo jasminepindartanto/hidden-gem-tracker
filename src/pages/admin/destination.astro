@@ -1,0 +1,25 @@
+---
+// src/pages/admin/destination.astro
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { DestinationTable } from "@/components/admin/DestinationTable";
+---
+
+<AdminLayout title="Destination Overview" description="Manage Bandung's best kept secrets">
+  <main class="max-w-7xl mx-auto px-4 md:px-8 py-10">
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-900 font-noto-serif">Destination Overview</h1>
+        <p class="text-slate-500 mt-1">Manage and curate Bandung's best kept secrets.</p>
+      </div>
+      
+      <a 
+        href="/admin/destination/add" 
+        class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-500/20"
+      >
+        <span class="text-xl">+</span> Add New Destination
+      </a>
+    </header>
+
+    <DestinationTable client:load />
+  </main>
+</AdminLayout>

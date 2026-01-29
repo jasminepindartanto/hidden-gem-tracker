@@ -1,0 +1,16 @@
+---
+// src/pages/admin/destinations/add.astro
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { DestinationForm } from "@/components/admin/DestinationForm";
+---
+
+<AdminLayout title="Add New Destination" description="Create a new hidden gem entry">
+  <main class="max-w-7xl mx-auto px-4 md:px-8 py-10">
+    <header class="mb-10">
+      <h1 class="text-3xl font-bold text-slate-900 font-noto-serif">Add New Destination</h1>
+      <p class="text-slate-500 mt-1">Fill in the details to publish a new hidden gem in Bandung.</p>
+    </header>
+
+    <DestinationForm client:load />
+  </main>
+</AdminLayout>

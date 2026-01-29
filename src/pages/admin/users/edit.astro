@@ -1,0 +1,23 @@
+---
+// src/pages/admin/users/edit.astro
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { UserForm } from "@/components/admin/UserForm";
+---
+
+<AdminLayout 
+  title="Edit User" 
+  description="Halaman untuk memperbarui informasi akun pengelola Hidden Bandung"
+>
+  <main class="max-w-4xl mx-auto px-4 py-16">
+    <header class="text-center mb-10">
+      {/* Judul diubah menjadi Edit User */}
+      <h1 class="text-4xl font-bold text-slate-900 font-noto-serif">Edit User</h1>
+      <p class="text-slate-500 mt-2">Update account information for contributors or administrators.</p>
+    </header>
+
+    <div class="bg-white p-8 md:p-12 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50">
+      {/* Jangan lupa kirim mode="edit" agar tombol form berubah otomatis */}
+      <UserForm client:load mode="edit" />
+    </div>
+  </main>
+</AdminLayout>

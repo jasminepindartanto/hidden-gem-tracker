@@ -18,6 +18,13 @@ export default defineConfig({
   image: {
     domains: ["public-files.gumroad.com"],
   },
+  output: 'server', // Wajib untuk menjalankan fitur redirect & cookies
+  integrations: [
+    react(), 
+    tailwindcss({
+      applyBaseStyles: false,
+    })
+  ],
   adapter: vercel({
     imageService: true,
   }),

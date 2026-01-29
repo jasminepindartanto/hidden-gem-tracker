@@ -1,0 +1,21 @@
+---
+// src/pages/admin/destination/edit.astro
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { DestinationForm } from "@/components/admin/DestinationForm";
+---
+
+<AdminLayout 
+  title="Edit Destination" 
+  description="Update details for an existing hidden gem in Bandung"
+>
+  <main class="max-w-7xl mx-auto px-4 md:px-8 py-10">
+    <header class="mb-10">
+      {/* Judul Halaman berubah menjadi Edit */}
+      <h1 class="text-3xl font-bold text-slate-900 font-noto-serif">Edit Destination</h1>
+      <p class="text-slate-500 mt-1">Make changes to the destination information and media gallery.</p>
+    </header>
+
+    {/* Memanggil Form dengan mode edit */}
+    <DestinationForm client:load mode="edit" />
+  </main>
+</AdminLayout>
