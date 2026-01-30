@@ -1,24 +1,31 @@
 import React from 'react';
 import { toast } from "sonner";
 
+// 1. Sesuaikan Interface dengan Nama Kolom Database Anda
 interface Review {
   id: number;
-  nama_user: string;  // Sesuai dengan skema database Anda
-  dtw_name: string;
-  rating_user: number; // Sesuai dengan skema database Anda
-  komentar: string;    // Sesuai dengan skema database Anda
+  user_id: number;
+  lokasi_id: number;
+  nama_user: string;   // Sesuai skema
+  komentar: string;    // Sesuai skema
+  rating: number; // Sesuai skema (Sebelumnya: rating)
+  dtw_name?: string;   // Opsional: hasil JOIN dari tabel lokasi_wisata
 }
 
 export const ReviewTable = ({ data }: { data: Review[] }) => {
   const handleDelete = async (id: number) => {
-    if (!confirm("Hapus ulasan ini?")) return;
+    if (!confirm("Hapus ulasan ini secara permanen?")) return;
     
-    const res = await fetch(`/api/admin/reviews?id=${id}`, { method: 'DELETE' });
-    if (res.ok) {
-      toast.success("Review deleted");
-      window.location.reload();
-    } else {
-      toast.error("Gagal menghapus ulasan");
+    try {
+      const res = await fetch(`/api/admin/reviews?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast.success("Ulasan berhasil dihapus");
+        window.location.reload();
+      } else {
+        toast.error("Gagal menghapus ulasan");
+      }
+    } catch (error) {
+      toast.error("Terjadi kesalahan server");
     }
   };
 
@@ -37,18 +44,18 @@ export const ReviewTable = ({ data }: { data: Review[] }) => {
           {data.map((review) => (
             <tr key={review.id} className="hover:bg-slate-50/50 transition-colors">
               <td className="px-6 py-4">
-                {/* Perbaikan: Gunakan nama_user */}
+                {/* Menampilkan nama_user sesuai database */}
                 <p className="font-bold text-slate-800 text-sm">{review.nama_user}</p>
-                <p className="text-xs text-emerald-600 font-medium">{review.dtw_name}</p>
+                <p className="text-xs text-emerald-600 font-medium">{review.dtw_name || `Location ID: ${review.lokasi_id}`}</p>
               </td>
               <td className="px-6 py-4 text-center">
-                {/* Perbaikan: Gunakan rating_user */}
+                {/* Perbaikan: Menggunakan rating_user */}
                 <span className="text-sm font-bold text-amber-500 bg-amber-50 px-2 py-1 rounded-lg">
-                  ⭐ {review.rating_user}
+                  ⭐ {review.rating}
                 </span>
               </td>
               <td className="px-6 py-4">
-                {/* Perbaikan: Gunakan komentar */}
+                {/* Menampilkan komentar sesuai database */}
                 <p className="text-sm text-slate-600 line-clamp-2 max-w-md italic">
                   "{review.komentar}"
                 </p>

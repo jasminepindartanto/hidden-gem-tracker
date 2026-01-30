@@ -101,7 +101,7 @@ const origin = Astro.url.origin;
                 <div class="flex justify-between items-center mb-3">
                   <span class="font-bold text-white">{rev.nama_user}</span>
                   {/* Gunakan rating_user sesuai skema database Anda */}
-                  <div class="text-emerald-400 text-sm">{"★".repeat(rev.rating_user || 0)}</div>
+                  <div class="text-emerald-400 text-sm">{"★".repeat(rev.rating || 0)}</div>
                 </div>
                 <p class="text-slate-400 italic text-sm">"{rev.komentar || "Sangat direkomendasikan!"}"</p>
               </div>

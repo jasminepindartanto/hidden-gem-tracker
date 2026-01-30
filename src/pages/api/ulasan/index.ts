@@ -29,7 +29,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
 
     // 4. Jalankan Query (Gunakan nama kolom rating_user sesuai skema Anda)
     await sql`
-      INSERT INTO ulasan (user_id, lokasi_id, nama_user, komentar, rating_user, tanggal)
+      INSERT INTO ulasan (user_id, lokasi_id, nama_user, komentar, rating, tanggal)
       VALUES (${userId}, ${lokasiId}, ${namaUser}, ${komentar}, ${rating}, NOW())
     `;
 
