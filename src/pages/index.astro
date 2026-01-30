@@ -86,6 +86,9 @@ const activeDoodleEntry = (await getCollection("doodles"))
 const activeDoodle = activeDoodleEntry
   ? { ...activeDoodleEntry.data, href: `/doodles/${activeDoodleEntry.id}` }
   : undefined;
+
+const sessionId = Astro.cookies.get("session")?.value;
+const isLoggedIn = !!sessionId;
 ---
 
 <MainLayout
@@ -93,7 +96,7 @@ const activeDoodle = activeDoodleEntry
   description={SITE_DESCRIPTION}
   className="w-full p-0"
 >
-  <HeroSection uniqueTags={uniqueTags} doodle={activeDoodle} />
+  <HeroSection uniqueTags={uniqueTags} doodle={activeDoodle} isLoggedIn={isLoggedIn}/>
 
   <div class="px-4 md:px-8 lg:px-12 max-w-7xl mx-auto">
     

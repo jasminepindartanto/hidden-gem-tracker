@@ -5,9 +5,32 @@ import Header from "../components/Header.astro";
 import { Toaster } from "../components/ui/sonner";
 import { cn } from "@/lib/utils";
 import "../styles/global.css";
+// TAMBAHKAN baris ini agar koneksi database jalan
+import sql from "@/lib/db"; 
 
 const { title, description, className } = Astro.props;
+
+// Tentukan tipe data yang diharapkan dari database
+interface UserData {
+  display_name: string;
+  role: string;
+}
+
+const sessionId = Astro.cookies.get("session")?.value;
+let currentUser: UserData | null = null;
+
+if (sessionId) {
+  // Tambahkan generic type <UserData[]> agar sql tahu apa yang dikembalikan
+  const users = await sql<UserData[]>`
+    SELECT display_name, role FROM users WHERE id = ${sessionId}
+  `;
+  currentUser = users[0] || null;
+}
+
+const isLoggedIn = Boolean(currentUser);
+
 ---
+
 <!doctype html>
 <html lang="en" class="mona">
   <head>
@@ -15,7 +38,7 @@ const { title, description, className } = Astro.props;
   </head>
   <body>
     <div class="flex min-h-screen flex-col bg-teahouse-bg text-white">
-      <Header />
+      <Header user={currentUser} />
       <main class="flex-1">
         <div class={cn(className ? className : "container p-4 md:p-6 mx-auto")}>
           <slot />
