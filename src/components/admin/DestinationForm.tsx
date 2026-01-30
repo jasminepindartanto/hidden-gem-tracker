@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 // 1. Definisikan tipe prop
 interface DestinationFormProps {
   mode?: 'add' | 'edit';
+  initialData?: any; // Tambahkan baris ini
 }
 
 // 2. Tangkap prop 'mode'

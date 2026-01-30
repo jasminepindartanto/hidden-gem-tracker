@@ -46,6 +46,41 @@ const isLoggedIn = Boolean(currentUser);
       </main>
       <Footer />
     </div>
-    <Toaster client:load />
+    <Toaster 
+      client:load 
+      richColors 
+      closeButton 
+      theme="dark"
+      toastOptions={{
+        style: { 
+          padding: '16px', 
+          fontSize: '15px', 
+          border: '2px solid #ef4444' // Garis merah tebal untuk error
+        },
+      }}
+    />
   </body>
 </html>
+
+<script>
+  import { toast } from "sonner";
+
+  // Gunakan fungsi ini agar script menunggu semua library siap
+  const showNotification = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorType = urlParams.get('error');
+
+    if (errorType === 'unauthorized') {
+      toast.error("Akses Ditolak!", {
+        description: "Hanya Admin yang boleh masuk ke halaman tersebut.",
+        duration: 5000,
+      });
+
+      // Bersihkan URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  };
+
+  // Jalankan saat halaman selesai dimuat total
+  window.addEventListener('load', showNotification);
+</script>

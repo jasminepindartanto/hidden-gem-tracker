@@ -3,6 +3,28 @@
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { DashboardStats } from "@/components/admin/DashboardStats";
 import { RecentDestination } from "@/components/admin/RecentDestination";
+import type { Destination } from "@/types/destination.ts";
+import sql from "@/lib/db"; // Import koneksi database Anda
+
+
+interface StatsData {
+  total_destinations: number;
+  total_users: number;
+}
+
+const statsData = await sql<StatsData[]>`
+  SELECT 
+    (SELECT COUNT(*) FROM lokasi_wisata)::int as total_destinations,
+    (SELECT COUNT(*) FROM users)::int as total_users
+`;
+
+
+const rows = await sql<Destination[]>`
+  SELECT id, dtw, lokasi, rating, tags FROM lokasi_wisata ORDER BY tanggal DESC LIMIT 5
+`;
+
+const recentDestinations: Destination[] = rows;
+
 ---
 
 <AdminLayout title="Dashboard Overview" description="Admin Panel Hidden Bandung">
@@ -13,16 +35,16 @@ import { RecentDestination } from "@/components/admin/RecentDestination";
     </header>
 
     <div class="mb-12">
-       <DashboardStats client:load />
+       <DashboardStats stats={statsData[0]} client:load />
     </div>
 
     <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6">
       <div class="flex justify-between items-center mb-6 px-2">
         <h3 class="font-bold text-slate-900">Recent Destinations</h3>
-        <a href="/admin/destinations" class="text-xs font-bold text-emerald-600 hover:underline">View All</a>
+        <a href="/admin/destination" class="text-xs font-bold text-emerald-600 hover:underline">View All</a>
       </div>
       
-      <RecentDestination client:load />
+      <RecentDestination data={recentDestinations} client:load />
     </div>
   </main>
 </AdminLayout>

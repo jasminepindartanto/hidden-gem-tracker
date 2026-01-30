@@ -2,9 +2,23 @@
 import MainLayout from "./../../layouts/MainLayout.astro";
 import sql from "@/lib/db"; // Gunakan koneksi database Anda
 
-// Ambil destinasi dari DB agar lokasi_id sesuai dengan tabel lokasi_wisata
-const allDestinations = await sql`SELECT id, dtw FROM lokasi_wisata ORDER BY dtw ASC`;
 
+const sessionId = Astro.cookies.get("session")?.value;
+let currentUser = null;
+
+if (sessionId) {
+  // 2. Cari nama user di database berdasarkan session ID
+  const users = await sql`SELECT display_name FROM users WHERE id::text = ${sessionId} LIMIT 1`;
+  if (users.length > 0) {
+    currentUser = users[0];
+  }
+}
+
+// Jika belum login, Anda bisa mengarahkan mereka ke halaman login
+if (!currentUser) return Astro.redirect("/login?error=must-login");
+
+const preSelectedId = Astro.url.searchParams.get("lokasi_id"); // Tangkap ID dari tombol
+const allDestinations = await sql`SELECT id, dtw FROM lokasi_wisata ORDER BY dtw ASC`;
 ---
 
 <MainLayout title="Write a Review" description="berikan ulasan terbaru dari komunitas Hidden Bandung.">
@@ -23,9 +37,20 @@ const allDestinations = await sql`SELECT id, dtw FROM lokasi_wisata ORDER BY dtw
         <div class="space-y-8">
           <div class="space-y-4">
             <label class="text-sm font-bold text-slate-300 ml-1">Where did you go?</label>
-            <select name="lokasi_id" required class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-5 py-4 text-white outline-none appearance-none cursor-pointer transition-all">
-              <option value="" disabled selected>Select a destination</option>
-              {allDestinations.map(dest => <option value={dest.id}>{dest.dtw}</option>)}
+            <select name="lokasi_id" required class="w-full bg-slate-800 ...">
+              {/* Perbaikan: Gunakan atribut 'selected' secara langsung dengan logika boolean */}
+              <option value="" disabled selected={!preSelectedId}>
+                Select a destination
+              </option>
+
+              {allDestinations.map((dest: any) => (
+                <option 
+                  value={dest.id} 
+                  selected={preSelectedId === dest.id.toString()} 
+                >
+                  {dest.dtw}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -45,10 +70,14 @@ const allDestinations = await sql`SELECT id, dtw FROM lokasi_wisata ORDER BY dtw
               name="nama_user" 
               type="text" 
               required 
-              placeholder="Ex: Cindy Nur" 
-              class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-5 py-4 text-white outline-none" 
+              readonly
+              value={currentUser.display_name} 
+              class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-5 py-4 text-slate-400 outline-none cursor-not-allowed" 
             />
+            <p class="text-[10px] text-slate-500 ml-1 italic">*Posting as logged in user</p>
           </div>
+
+          <input type="hidden" name="user_id" value={sessionId} />
         </div>
 
         <div class="space-y-8">

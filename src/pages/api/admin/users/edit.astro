@@ -14,8 +14,26 @@ if (id) {
 
 // Jika ID tidak valid, balikkan ke daftar user
 if (!userData) return Astro.redirect("/admin/users");
+
+interface User {
+  id: number;
+  email: string;
+  display_name: string;
+  role: string;
+  tanggal: Date;
+}
+
+const usersData = await sql<User[]>`
+  SELECT id, email, display_name, role, tanggal 
+  FROM users 
+  ORDER BY tanggal DESC
+`;
+
 ---
 
-<AdminLayout title="Edit User" description="Halaman untuk mengelola akses dan data pengguna Hidden Bandung">
-    <UserForm client:load mode="edit" initialData={userData} />
+<AdminLayout 
+  title="Edit User" 
+  description="Halaman untuk mengedit data pengguna"
+>
+  <UserForm client:load mode="edit" initialData={userData} />
 </AdminLayout>

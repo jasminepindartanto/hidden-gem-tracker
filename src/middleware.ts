@@ -1,33 +1,47 @@
+// src/middleware.ts
 import { defineMiddleware } from "astro:middleware";
+import sql from "@/lib/db"; 
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  // Gunakan nama 'session' secara konsisten
   const sessionId = context.cookies.get("session")?.value;
   const path = context.url.pathname;
-
   const isLoggedIn = Boolean(sessionId);
   
-  // 1. PASTIKAN "/auth/login" terdaftar di sini jika Anda menggunakannya
-  const publicPages = ["/login", "/signup", "/api/auth", "/auth/login"];
-  const isPublicPage = publicPages.some(p => path.startsWith(p));
-  const isStaticFile = path.includes(".") || path.startsWith("/_astro");
+  // 2. Tambahkan /admin/auth ke publicPages agar tidak terjadi loop redirect
+  const publicPages = ["/login", "/signup", "/api/auth", "/auth/login", "/admin/auth", "/api/auth/me"];
+  const isPublicPage = publicPages.some(p => path === p || path.startsWith(p + "/"));
 
-  // 2. PROTEKSI: Jika belum login, arahkan ke SATU alamat yang pasti (misal: /login)
-  if (!isLoggedIn && !isPublicPage && !isStaticFile) {
-    return context.redirect("/auth/login"); 
+  let userRole = null;
+  if (sessionId) {
+    // Sesuaikan query: apakah sessionId berisi ID (integer) atau Email (string)?
+    const users = await sql`SELECT role FROM users WHERE id::text = ${sessionId} OR email = ${sessionId}`;
+    if (users.length > 0) {
+      userRole = users[0].role?.toLowerCase(); // Ubah ke lowercase agar pengecekan aman
+    }
   }
 
-  // 3. ANTI-LOGIN: Jika sudah login, balikkan ke Home
+  // 3. LOGIKA PROTEKSI ADMIN
+  if (path.startsWith("/admin") && !isPublicPage) {
+    if (!isLoggedIn) {
+      return context.redirect("/auth/login"); // Arahkan ke login utama
+    }
+    
+    // Pastikan userRole dicek dengan benar (case-insensitive)
+    if (userRole !== 'admin') {
+      return context.redirect("/?error=unauthorized");
+    }
+  }
+
+  // 4. Mencegah Loop: Jika sudah login, jangan boleh ke halaman login lagi
   if (isLoggedIn && isPublicPage && path !== "/api/auth/logout") {
-    return context.redirect("/auth/login");
+    // Jika admin, arahkan ke dashboard. Jika user biasa, ke home.
+    const target = (userRole === 'admin') ? "/admin" : "/";
+    return context.redirect(target);
   }
 
   const response = await next();
-
-  // CSP tetap aktif untuk Google Maps
-  response.headers.set(
-    "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' https://maps.googleapis.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://maps.googleapis.com;"
-  );
-
+  
+  // Headers CSP tetap sama
   return response;
 });

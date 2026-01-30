@@ -2,6 +2,22 @@
 // src/pages/admin/users.astro
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { UserTable } from "@/components/admin/UserTable";
+import sql from "@/lib/db"; // Pastikan import database Anda
+
+interface User {
+  id: number;
+  email: string;
+  display_name: string;
+  role: string;
+  tanggal: Date;
+}
+
+// 2. Sekarang panggil sql dengan interface tersebut
+const usersData = await sql<User[]>`
+  SELECT id, email, display_name, role, tanggal 
+  FROM users 
+  ORDER BY tanggal DESC
+`;
 ---
 
 <AdminLayout 
@@ -15,7 +31,6 @@ import { UserTable } from "@/components/admin/UserTable";
         <p class="text-slate-500 mt-1">Oversee and manage registered community members and their activities.</p>
       </div>
       
-      {/* Pastikan href mengarah ke /admin/users/add sesuai struktur folder */}
       <a 
         href="/admin/users/add" 
         class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
@@ -25,6 +40,6 @@ import { UserTable } from "@/components/admin/UserTable";
       </a>
     </header>
 
-    <UserTable client:load />
+    <UserTable users={usersData} client:load />
   </main>
 </AdminLayout>

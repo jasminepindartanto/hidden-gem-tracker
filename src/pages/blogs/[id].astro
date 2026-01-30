@@ -80,18 +80,35 @@ const origin = Astro.url.origin;
         </div>
 
         <div class="mt-20 pt-10 border-t border-slate-800">
-          <h3 class="text-2xl font-bold text-white mb-8 font-noto-serif">Cerita Pengunjung</h3>
+          <div class="flex justify-between items-center mb-8">
+            <h3 class="text-2xl font-bold text-white font-noto-serif">Cerita Pengunjung</h3>
+            
+            {/* Tombol Tulis Ulasan yang Otomatis Membawa ID Destinasi */}
+            <a 
+              href={`/reviews/write?lokasi_id=${post.id}`} 
+              class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 px-5 py-2.5 rounded-2xl text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              Tulis Ulasan
+            </a>
+          </div>
+
           <div class="space-y-6">
             {ulasanData.length > 0 ? ulasanData.map((rev) => (
               <div class="bg-slate-900/40 p-6 rounded-3xl border border-slate-700/30">
                 <div class="flex justify-between items-center mb-3">
                   <span class="font-bold text-white">{rev.nama_user}</span>
-                  <div class="text-emerald-400 text-sm">{"★".repeat(rev.rating)}</div>
+                  {/* Gunakan rating_user sesuai skema database Anda */}
+                  <div class="text-emerald-400 text-sm">{"★".repeat(rev.rating_user || 0)}</div>
                 </div>
                 <p class="text-slate-400 italic text-sm">"{rev.komentar || "Sangat direkomendasikan!"}"</p>
               </div>
             )) : (
-              <p class="text-slate-500 italic">Jadilah yang pertama berbagi cerita di sini.</p>
+              <div class="text-center py-10 bg-slate-900/20 rounded-3xl border border-dashed border-slate-800">
+                <p class="text-slate-500 italic">Belum ada ulasan. Jadilah yang pertama berbagi cerita di sini.</p>
+              </div>
             )}
           </div>
         </div>
