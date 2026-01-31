@@ -1,6 +1,9 @@
 ---
 import MainLayout from "@/layouts/MainLayout.astro";
 import { Mail, Lock, LogIn } from "lucide-react";
+
+const error = Astro.url.searchParams.get("error");
+const message = Astro.url.searchParams.get("message");
 ---
 
 <MainLayout title="Login | Hidden Bandung" description="Masuk ke akun Anda">
@@ -10,6 +13,13 @@ import { Mail, Lock, LogIn } from "lucide-react";
         <h1 class="text-3xl font-bold text-white tracking-tight mb-2">Welcome Back</h1>
         <p class="text-slate-400">Sign in to continue your adventure</p>
       </div>
+
+      {error === "unauthorized" && (
+        <div class="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3">
+          <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+          <p class="text-sm text-red-400 font-medium">{message}</p>
+        </div>
+      )}
 
       <div class="bg-slate-900/50 border border-slate-800 p-8 rounded-[32px] backdrop-blur-md shadow-2xl">
         <form method="POST" action="/api/auth" class="space-y-5">

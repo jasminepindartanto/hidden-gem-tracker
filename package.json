@@ -14,7 +14,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "build:index": "ts-node scripts/build-pagefind-index.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",

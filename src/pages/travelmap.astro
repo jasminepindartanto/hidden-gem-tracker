@@ -5,30 +5,236 @@ import MainLayout from "@/layouts/MainLayout.astro";
 
 <MainLayout
   title={`Travel Map | ${SITE_TITLE}`}
-  description="Peta interaktif perjalanan Hidden Bandung."
+  description="Peta rute dari titik acuan ke destinasi wisata."
   className="w-full p-0"
 >
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
+  
   <div class="px-4 md:px-8 lg:px-12 max-w-7xl mx-auto py-16">
-    
-    <div class="mb-12">
-      <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 font-noto-serif">
-        Destination Guide
-      </h1>
-    </div>
+    <div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div>
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 font-noto-serif">Direction Guide</h1>
+        <p class="text-slate-400 font-medium">Mulai perjalanan Anda dari titik acuan atau lokasi saat ini.</p>
+      </div>
 
-    <div class="mb-20">
-      <div 
-        id="map" 
-        class="w-full h-[500px] md:h-[650px] rounded-[32px] bg-slate-900/50 border border-slate-700 shadow-2xl flex items-center justify-center overflow-hidden"
-      >
-        <div class="text-center p-8">
-          <div class="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-6"></div>
-          <p class="text-slate-500 font-medium tracking-wide italic">
-            Initializing Google Maps API...
-          </p>
-        </div>
+      <div class="w-full md:w-80">
+        <label class="block text-emerald-500 text-sm font-bold mb-2">Pilih Titik Keberangkatan:</label>
+        <select id="start-point-select" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl p-3 outline-none focus:border-emerald-500 transition-all shadow-xl cursor-pointer">
+          <option value="gps">📍 Lokasi GPS Saya (Otomatis)</option>
+        </select>
       </div>
     </div>
 
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-20">
+      <div class="lg:col-span-1 order-2 lg:order-1">
+        <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
+          <span class="bg-emerald-500 w-2 h-8 rounded-full"></span>
+          Destinasi Terdekat
+        </h2>
+        <div id="nearest-list" class="space-y-6 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
+          <p class="text-slate-500 italic text-sm text-center py-10">Menentukan rute terbaik...</p>
+        </div>
+      </div>
+
+      <div class="lg:col-span-3 order-1 lg:order-2">
+        <div id="map" class="w-full h-[500px] md:h-[650px] rounded-[32px] bg-slate-900/50 border border-slate-700 shadow-2xl overflow-hidden relative">
+          <div id="loading-state" class="absolute inset-0 z-[1000] bg-slate-900/95 flex items-center justify-center">
+            <div class="text-center">
+              <div class="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"></div>
+              <p class="text-slate-400 italic font-medium">Sinkronisasi Database...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </MainLayout>
+
+<script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script is:inline src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+
+<script is:inline>
+  function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  async function initLeafletMap() {
+    const map = L.map('map').setView([-6.9175, 107.6191], 13);
+    let userLatLng = null;
+    let routingControl = null;
+    let destinations = [];
+    let userMarker = null;
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    const createCustomIcon = (isUser = false) => {
+      const color = isUser ? '#2563eb' : '#064e3b'; 
+      return L.divIcon({
+        className: 'custom-div-icon',
+        html: `<div class="marker-container ${isUser ? 'user-icon' : ''}">
+                <div class="ping-effect"></div>
+                <div class="marker-bounce" style="background: ${color};">
+                  <svg viewBox="0 0 24 24" fill="white" style="width:18px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+                </div>
+              </div>`,
+        iconSize: [45, 45], iconAnchor: [22, 22]
+      });
+    };
+
+    window.getDirections = function(lat, lng) {
+      if (!userLatLng) {
+          alert("Lokasi awal belum ditentukan!");
+          return;
+      }
+      if (routingControl) map.removeControl(routingControl);
+      routingControl = L.Routing.control({
+        waypoints: [L.latLng(userLatLng.lat, userLatLng.lng), L.latLng(lat, lng)],
+        lineOptions: { styles: [{ color: '#10b981', weight: 6, opacity: 0.8 }] },
+        createMarker: () => null,
+        addWaypoints: false,
+        show: true
+      }).addTo(map);
+      
+      // Scroll ke peta jika di mobile
+      if (window.innerWidth < 1024) {
+          document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+
+    function renderNearestList(currentLat, currentLng) {
+      const listContainer = document.getElementById('nearest-list');
+      const sortedDest = destinations.map(d => ({
+        ...d,
+        distance: calculateDistance(currentLat, currentLng, d.lat, d.lng)
+      })).sort((a, b) => a.distance - b.distance).slice(0, 5);
+
+      listContainer.innerHTML = sortedDest.map((dest, index) => `
+        <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl overflow-hidden hover:border-emerald-500/50 transition-all group shadow-lg">
+          <div class="relative h-32 w-full overflow-hidden">
+            <img src="${dest.photo}" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-500" />
+            <div class="absolute top-2 left-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg">#${index + 1} Terdekat</div>
+            <div class="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md text-white text-[10px] px-2 py-1 rounded-md">★ ${dest.rating}</div>
+          </div>
+          <div class="p-4">
+            <h3 class="text-white font-bold text-sm line-clamp-1 mb-1">${dest.dtw}</h3>
+            <p class="text-emerald-400 font-bold text-xs mb-3">${dest.distance.toFixed(1)} km dari titik awal</p>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="getDirections(${dest.lat}, ${dest.lng})" class="bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-lg text-[10px] font-bold transition-colors">
+                    Lihat Rute
+                </button>
+                <a href="/blogs/${dest.id}" class="bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-[10px] font-bold transition-colors text-center flex items-center justify-center">
+                    Detail
+                </a>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function fetchPoints() {
+      try {
+        const [resStart, resDest] = await Promise.all([
+          fetch('/api/titik_awal'),
+          fetch('/api/lokasi')
+        ]);
+
+        const startPoints = await resStart.json();
+        const wisataData = await resDest.json();
+
+        const select = document.getElementById('start-point-select');
+        startPoints.forEach(point => {
+          const option = document.createElement('option');
+          option.value = `${point.latitude},${point.longitude}`;
+          option.textContent = point.nama_lokasi;
+          select.appendChild(option);
+        });
+
+        wisataData.forEach(dest => {
+          const lat = parseFloat(dest.latitude);
+          const lng = parseFloat(dest.longitude);
+          if (isNaN(lat) || isNaN(lng)) return;
+
+          destinations.push({ 
+            lat, lng, dtw: dest.dtw, 
+            id: dest.id,
+            addr: dest.lokasi || `${dest.kotakabupaten}, ${dest.provinsi}`, 
+            photo: dest.url_foto || 'https://images.unsplash.com/photo-1506461883276-594a12b11cf3?w=300',
+            rating: dest.rating || '0.0'
+          });
+
+          L.marker([lat, lng], { icon: createCustomIcon(false) }).addTo(map)
+           .bindPopup(`
+                <div class="p-2 min-w-[150px]">
+                    <b class="text-slate-900 block mb-1 text-sm">${dest.dtw}</b>
+                    <p class="text-slate-500 text-[10px] mb-3 line-clamp-1">${dest.lokasi || ''}</p>
+                    <div class="flex flex-col gap-1.5">
+                        <button onclick="getDirections(${lat}, ${lng})" class="bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold w-full">Arahkan Rute</button>
+                        <a href="/blogs/${dest.id}" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold w-full text-center">Detail Destinations</a>
+                    </div>
+                </div>
+           `);
+        });
+      } catch (e) { console.error("Database Error:", e); }
+    }
+
+    function updateUserMarker(lat, lng) {
+      userLatLng = { lat, lng };
+      if (userMarker) map.removeLayer(userMarker);
+      userMarker = L.marker([lat, lng], { icon: createCustomIcon(true) }).addTo(map)
+                    .bindTooltip("Mulai dari sini", { permanent: true, direction: 'top', className: 'label-user' });
+      map.setView([lat, lng], 14);
+      renderNearestList(lat, lng);
+    }
+
+    const select = document.getElementById('start-point-select');
+    select.addEventListener('change', (e) => {
+      if (e.target.value === 'gps') map.locate({setView: true});
+      else {
+        const [lat, lng] = e.target.value.split(',').map(Number);
+        updateUserMarker(lat, lng);
+      }
+    });
+
+    await fetchPoints();
+
+    map.locate({setView: true, maxZoom: 14});
+    map.on('locationfound', (e) => {
+      updateUserMarker(e.latlng.lat, e.latlng.lng);
+      document.getElementById('loading-state').style.display = 'none';
+    });
+  }
+
+  initLeafletMap();
+</script>
+
+<style is:global>
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+  
+  @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } }
+  @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+  .ping-effect { position: absolute; width: 45px; height: 45px; border-radius: 50%; background: rgba(16, 185, 129, 0.4); animation: ping 1.8s infinite; }
+  .marker-bounce { position: relative; width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.5); animation: bounce 2s infinite ease-in-out; }
+  
+  .label-user { background: #2563eb !important; color: white !important; border-radius: 6px !important; font-size: 10px !important; border: none !important; font-weight: bold; }
+  
+  /* Routing Panel Style */
+  .leaflet-routing-container { 
+      background: #1e293b !important; 
+      color: white !important; 
+      border-radius: 16px !important; 
+      font-family: inherit !important; 
+      font-size: 11px !important;
+      border: 1px solid #334155 !important;
+      padding: 12px !important;
+      max-height: 300px !important;
+  }
+  .leaflet-routing-alt { border-bottom: 1px solid #334155 !important; }
+</style>

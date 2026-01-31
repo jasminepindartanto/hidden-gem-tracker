@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import matter from "gray-matter";
 import { createIndex, type PagefindIndex } from "pagefind";
+import sql from "../src/lib/db"; // Pastikan path ini benar sesuai lokasi db.ts Anda
 
 type ContentItem = {
   id: string;
@@ -10,125 +11,102 @@ type ContentItem = {
   body: string;
   tags: string[];
   pubDate?: string;
-  type: "card" | "blog" | "slide";
+  type: "card" | "blog" | "slide" | "destination";
   url: string;
   filePath: string;
 };
 
+// 1. Fungsi membaca file lokal (.md)
 function readContentCollection(
   collectionPath: string,
   type: "card" | "blog" | "slide",
 ): ContentItem[] {
   const fullPath = join(process.cwd(), "src", "content", collectionPath);
-
-  if (!existsSync(fullPath)) {
-    console.warn(`Collection path does not exist: ${fullPath}`);
-    return [];
-  }
+  if (!existsSync(fullPath)) return [];
 
   const items: ContentItem[] = [];
-  const entries = readdirSync(fullPath, {
-    recursive: true,
-    withFileTypes: true,
-  });
+  const entries = readdirSync(fullPath, { recursive: true, withFileTypes: true });
 
   for (const entry of entries) {
     if (entry.isFile() && entry.name.endsWith(".md")) {
-      const filePath = join(
-        // biome-ignore lint/suspicious/noExplicitAny: Need to access 'path' property which may not exist in all @types/node versions
-        (entry as any).path ?? entry.parentPath,
-        entry.name,
-      );
+      const filePath = join((entry as any).path ?? entry.parentPath, entry.name);
       const content = readFileSync(filePath, "utf-8");
       const { data, content: body } = matter(content);
+      const id = entry.name.replace(/\.md$/, "");
+      const url = `/${type === "blog" ? "blogs" : type + "s"}/${id}`;
 
-      // Extract the ID (remove src/content/ and .md extension)
-      const id = filePath
-        .replace(fullPath, "")
-        .replace(/^\//, "")
-        .replace(/\.md$/, "")
-        .replaceAll(".", "");
-
-      // Create URL by removing .md extension but keeping the full path structure
-      const url = `/${type === "blog" ? "blogs" : type === "card" ? "cards" : "slides"}/${id}`;
-
-      items.push({
-        id,
-        title: data.title || "",
-        description: data.description || "",
-        body,
-        tags: data.tags || [],
-        pubDate: data.pubDate,
-        type,
-        url,
-        filePath,
-      });
+      items.push({ id, title: data.title || "", description: data.description || "", body, tags: data.tags || [], pubDate: data.pubDate, type, url, filePath });
     }
   }
-
   return items;
 }
 
-async function addItemsToIndex(items: ContentItem[], index?: PagefindIndex) {
+// 2. Fungsi membaca data dari Database SQL (Destinasi Wisata)
+async function readDatabaseDestinations(): Promise<ContentItem[]> {
+  try {
+    const destinations = await sql`SELECT id, dtw, deskripsi_lengkap, author, tanggal FROM lokasi_wisata`;
+    return destinations.map(dest => ({
+      id: dest.id.toString(),
+      title: dest.dtw,
+      description: dest.deskripsi_lengkap?.substring(0, 160) || "",
+      body: dest.deskripsi_lengkap || "",
+      tags: ["Wisata", "Bandung"],
+      pubDate: dest.tanggal,
+      type: "blog", // Diarahkan ke blogs agar sesuai dengan route /blogs/[id]
+      url: `/blogs/${dest.id}`,
+      filePath: "database"
+    }));
+  } catch (e) {
+    console.error("Gagal mengambil data DB:", e);
+    return [];
+  }
+}
+
+// 3. Fungsi pembantu untuk memasukkan item ke Pagefind
+async function addItemsToIndex(items: ContentItem[], index: PagefindIndex) {
   for (const item of items) {
-    // Add each item as a custom record to the pagefind index
-    await index?.addCustomRecord({
+    await index.addCustomRecord({
       url: item.url,
-      content: `
-        <h1>${item.title}</h1>
-        ${item.description ? `<p class="description">${item.description}</p>` : ""}
-        ${item.tags.length > 0 ? `<div class="tags">${item.tags.map((tag) => `<span class="tag">${tag}</span>`).join(" ")}</div>` : ""}
-        <div class="content">
-          ${item.body}
-        </div>
-      `,
-      language: "en",
+      content: `<h1>${item.title}</h1><p>${item.description}</p><div>${item.body}</div>`,
+      language: "id",
       meta: {
         title: item.title,
         description: item.description,
         keywords: item.tags.join(", "),
         type: item.type,
-        ...(item.pubDate && { date: item.pubDate }),
       },
-      filters: {
-        type: [item.type],
-      },
+      filters: { type: [item.type] },
     });
   }
 }
 
-async function buildPagefindIndex() {
-  console.log("Building pagefind index from content files...");
+// 4. Fungsi Utama Build
+async function main() {
+  console.log("Memulai proses indexing...");
 
-  // Read all content collections
   const cards = readContentCollection("cards", "card");
   const blogs = readContentCollection("blogs", "blog");
   const slides = readContentCollection("slides", "slide");
+  const dbDestinations = await readDatabaseDestinations();
 
-  const allItems = [...cards, ...blogs, ...slides];
-  console.log(`Found ${allItems.length} content items`);
+  const allItems = [...cards, ...blogs, ...slides, ...dbDestinations];
+  console.log(`Ditemukan ${allItems.length} total item untuk diindeks.`);
 
   try {
-    // Create pagefind index using Node API
     const { index } = await createIndex({});
+    if (!index) throw new Error("Gagal inisialisasi Pagefind index");
 
-    // Add all items to the index
     await addItemsToIndex(allItems, index);
 
-    // Write the index files
     const outputPath = join(process.cwd(), "public", "_pagefind");
-    if (!index) {
-      throw new Error("Failed to create Pagefind index: 'index' is undefined.");
-    }
-    await index.writeFiles({
-      outputPath,
-    });
+    await index.writeFiles({ outputPath });
 
-    console.log(`Pagefind index built successfully! Written to ${outputPath}`);
+    console.log(`Indeks berhasil dibuat di: ${outputPath}`);
+    process.exit(0);
   } catch (error) {
-    console.error("Error building pagefind index:", error);
+    console.error("Error build index:", error);
     process.exit(1);
   }
 }
 
-buildPagefindIndex().catch(console.error);
+main();

@@ -21,26 +21,47 @@ const initials = user?.display_name
 ---
 
 <header class="sticky top-0 z-50 w-full border-b border-teahouse-primary/10 bg-teahouse-bg/95 backdrop-blur shadow-sm">
-  <div class="container relative flex h-16 items-center justify-between">
+  <div class="container relative flex h-16 items-center justify-between gap-4">
     
-    <div class="flex items-center z-20">
+    {/* Sisi Kiri: Logo */}
+    <div class="flex items-center z-20 shrink-0">
       <a href="/" class="flex items-center gap-2">
         <OptimizedImage src="/logo_hidden.png" alt="logo" width={35} height={35} class="h-9 w-9" />
-        <span class="font-noto-serif text-xl font-bold text-white tracking-tight hidden sm:block">
+        <span class="font-noto-serif text-xl font-bold text-white tracking-tight hidden lg:block">
           {SITE_TITLE}
         </span>
       </a>
     </div>
 
-    <nav class="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8 z-10">
-      {visibleMenuItems.map((item) => (
-        <HeaderLink href={item.href} class="text-sm font-semibold text-slate-300 hover:text-emerald-400 transition-colors tracking-tight">
-          {item.label}
-        </HeaderLink>
-      ))}
-    </nav>
+    {/* Sisi Tengah: Navigasi & Search Bar */}
+    <div class="hidden md:flex items-center gap-8 flex-grow justify-center max-w-2xl">
+      <nav class="flex items-center gap-6">
+        {visibleMenuItems.map((item) => (
+          <HeaderLink href={item.href} class="text-sm font-semibold text-slate-300 hover:text-emerald-400 transition-colors tracking-tight whitespace-nowrap">
+            {item.label}
+          </HeaderLink>
+        ))}
+      </nav>
 
-    <div class="flex items-center gap-3 z-20">
+      <!-- {/* Kolom Pencarian */}
+      <form action="/destinations" method="GET" class="relative group w-full max-w-[200px] lg:max-w-[300px]">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+        <input 
+          type="text" 
+          name="q" 
+          placeholder="Cari destinasi..." 
+          class="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs text-white placeholder:text-slate-500 outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all"
+        />
+      </form> -->
+    </div>
+
+    {/* Sisi Kanan: Profil & Mobile Menu */}
+    <div class="flex items-center gap-3 z-20 shrink-0">
+      {/* Tombol Search Mobile (Hanya muncul di HP) */}
+      <button class="md:hidden p-2 text-slate-400 hover:bg-white/5 rounded-lg">
+        <Search className="w-5 h-5" />
+      </button>
+
       {user ? (
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-3 border-r border-white/10 pr-4">
@@ -78,35 +99,3 @@ const initials = user?.display_name
 
   </div>
 </header>
-
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const userBtn = document.getElementById("user-menu-button");
-    const userDropdown = document.getElementById("user-dropdown");
-    const logoutBtn = document.getElementById("logout-button");
-
-    // Toggle Dropdown
-    userBtn?.addEventListener("click", (e) => {
-      e.stopPropagation();
-      userDropdown?.classList.toggle("hidden");
-    });
-
-    // Handle Logout (Cara yang lebih aman lewat API)
-    logoutBtn?.addEventListener("click", () => {
-      // Lebih baik arahkan ke API logout agar cookie dihapus dari sisi server
-      window.location.href = "/api/auth/logout";
-    });
-
-    // Tutup dropdown jika klik di luar
-    document.addEventListener("click", (e) => {
-      if (!userBtn?.contains(e.target as Node)) {
-        userDropdown?.classList.add("hidden");
-      }
-    });
-  });
-  // Fungsi ini berjalan di browser
-  window.addEventListener('beforeunload', () => {
-    // Mengirim sinyal ke API Logout sebelum tab benar-benar tertutup
-    navigator.sendBeacon('/api/auth/logout');
-  });
-</script>

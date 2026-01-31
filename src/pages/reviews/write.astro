@@ -14,8 +14,9 @@ if (sessionId) {
   }
 }
 
-// Jika belum login, Anda bisa mengarahkan mereka ke halaman login
-if (!currentUser) return Astro.redirect("/login?error=must-login");
+if (!currentUser) {
+  return Astro.redirect("/auth/login?error=unauthorized&message=Silakan login terlebih dahulu untuk menulis ulasan");
+}
 
 const preSelectedId = Astro.url.searchParams.get("lokasi_id"); // Tangkap ID dari tombol
 const allDestinations = await sql`SELECT id, dtw FROM lokasi_wisata ORDER BY dtw ASC`;
