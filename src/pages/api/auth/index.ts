@@ -13,55 +13,55 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     return new Response("Data tidak valid", { status: 400 });
   }
 
+  // Konfigurasi Cookie yang AMAN untuk Localhost & Terbaca di seluruh Path
   const cookieOptions = {
     path: "/",
     httpOnly: true,
-    secure: true,
-    sameSite: "strict" as const,
-    // maxAge: 60 * 60 * 24,
+    secure: false, // Set FALSE jika masih pakai http://localhost
+    sameSite: "lax" as const,
+    maxAge: 60 * 60 * 24, // 1 hari
   };
 
-  // =====================
-  // SKENARIO 1: DAFTAR (SIGN UP)
-  // =====================
+  // --- SKENARIO 1: DAFTAR (SIGN UP) ---
   if (mode === "signup") {
-    const hashed = await hashPassword(password);
-
-    // 1. SIMPAN DULU KE DATABASE
-    const result = await sql`
-      INSERT INTO users (email, password, display_name, role)
-      VALUES (${email}, ${hashed}, ${displayName}, 'user')
-      RETURNING id
-    `;
-    
-    // 2. AMBIL ID NYA
-    const newUser = result[0]; 
-
-    // 3. SET COOKIE
-    cookies.set("session", String(newUser.id), cookieOptions);
-
-    // 4. TERAKHIR BARU REDIRECT
-    return redirect("/"); 
+    try {
+      const hashed = await hashPassword(password);
+      const result = await sql`
+        INSERT INTO users (email, password, display_name, role)
+        VALUES (${email}, ${hashed}, ${displayName}, 'user')
+        RETURNING id
+      `;
+      
+      const newUser = result[0]; 
+      cookies.set("session", String(newUser.id), cookieOptions);
+      return redirect("/"); 
+    } catch (e) {
+      return new Response("Email sudah terdaftar", { status: 400 });
+    }
   }
 
-  // =====================
-  // SKENARIO 2: MASUK (SIGN IN)
-  // =====================
-  const [foundUser] = await sql<{ id: number; password: string }[]>`
-    SELECT id, password FROM users WHERE email = ${email}
+  // --- SKENARIO 2: MASUK (SIGN IN) ---
+  const [foundUser] = await sql<{ id: number; password: string; role: string }[]>`
+    SELECT id, password, role FROM users WHERE email = ${email}
   `;
 
   if (!foundUser) {
-    return new Response("User tidak ditemukan", { status: 401 });
+    return redirect("/login?error=unauthorized&message=User tidak ditemukan");
   }
 
-  const valid = await comparePassword(password, foundUser.password);
+  const isValid = await comparePassword(password, foundUser.password);
 
-  if (!valid) {
-    return new Response("Password salah", { status: 401 });
+  if (!isValid) {
+    return redirect("/login?error=unauthorized&message=Password salah");
   }
 
+  // PERBAIKAN: Gunakan foundUser.id (sesuai variabel hasil query)
   cookies.set("session", String(foundUser.id), cookieOptions);
+
+  // Jika admin, arahkan ke dashboard admin
+  if (foundUser.role === 'admin') {
+    return redirect("/admin");
+  }
 
   return redirect("/");
 };

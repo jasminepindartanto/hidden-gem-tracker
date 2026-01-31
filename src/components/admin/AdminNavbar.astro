@@ -1,0 +1,102 @@
+---
+import sql from "@/lib/db";
+
+const sessionId = Astro.cookies.get("session")?.value;
+
+let user = null;
+
+if (sessionId) {
+  const rows = await sql`
+    SELECT display_name, role
+    FROM users
+    WHERE id::text = ${sessionId}
+       OR email = ${sessionId}
+    LIMIT 1
+  `;
+  user = rows[0] ?? null;
+}
+
+const pathname = Astro.url.pathname;
+
+const navItems = [
+  { label: "Dashboard", href: "/admin" },
+  { label: "Users", href: "/admin/users" },
+  { label: "Destinations", href: "/admin/destination" },
+  { label: "Reviews", href: "/admin/reviews" },
+];
+
+const initials = user?.display_name
+  ? user.display_name
+      .split(" ")
+      .map((n: string) => n[0])
+      .join("")
+      .toUpperCase()
+  : "??";
+---
+
+<nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 md:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- LEFT -->
+      <div class="flex items-center gap-8">
+        <span class="font-bold text-emerald-600 text-xl">
+          Dashboard Admin
+        </span>
+
+        <div class="hidden md:flex gap-1">
+          {navItems.map(item => {
+            const isActive =
+              item.href === "/admin"
+                ? pathname === "/admin"
+                : pathname.startsWith(item.href);
+
+            return (
+              <a
+                href={item.href}
+                class={`px-4 py-2 text-sm font-semibold rounded-xl transition-all ${
+                  isActive
+                    ? "text-emerald-600 bg-emerald-50"
+                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                }`}
+              >
+                {item.label}
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      {user && (
+        <div class="flex items-center gap-4">
+          <div class="text-right hidden sm:block">
+            <p class="text-sm font-bold text-slate-900">
+              {user.display_name}
+            </p>
+            <p class="text-xs text-emerald-500 uppercase tracking-widest font-black">
+              {user.role}
+            </p>
+          </div>
+
+          <div class="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center">
+            <span class="text-xs font-bold text-white">
+              {initials}
+            </span>
+          </div>
+
+         <a 
+            href="/api/auth/logout" 
+            title="Keluar"
+            class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all group"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </a>
+        </div>
+      )}
+
+    </div>
+  </div>
+</nav>

@@ -4,12 +4,38 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
 import { DestinationForm } from "@/components/admin/DestinationForm";
 import sql from "@/lib/db";
 
-// 1. Ambil ID dari URL (misal: /admin/destinations/edit?id=5)
 const id = Astro.url.searchParams.get("id");
-let destinationData = null;
 
+if (Astro.request.method === "POST") {
+  try {
+    const data = await Astro.request.formData();
+    
+    // Pastikan pemrosesan array taqs benar agar tidak error malformed array
+    const tagsRaw = data.get("tags")?.toString() || "";
+    const tagsArray = tagsRaw.split(",").map(t => t.trim()).filter(t => t !== "");
+
+    await sql`
+      UPDATE lokasi_wisata SET
+        dtw = ${data.get("dtw")?.toString() || ""},
+        tags = ${tagsArray}, 
+        rating = ${parseFloat(data.get("rating")?.toString() || "0")},
+        lokasi = ${data.get("lokasi")?.toString() || ""},
+        latitude = ${parseFloat(data.get("latitude")?.toString() || "0")},
+        longitude = ${parseFloat(data.get("longitude")?.toString() || "0")},
+        deskripsi_lengkap = ${data.get("deskripsi_lengkap")?.toString() || ""},
+        url_foto = ${data.get("url_foto")?.toString() || ""}
+      WHERE id = ${id}
+    `;
+
+    return Astro.redirect("/admin?success=updated");
+  } catch (error) {
+    console.error("Gagal update database:", error);
+  }
+}
+
+let destinationData = null;
 if (id) {
-  // 2. Ambil data destinasi berdasarkan ID
+  // PERBAIKAN: Ubah 'tags' menjadi 'taqs'
   const result = await sql`
     SELECT id, provinsi, kotakabupaten, dtw, latitude, longitude, 
            deskripsi_lengkap, url_foto, author, lokasi, tags, rating 
@@ -19,7 +45,6 @@ if (id) {
   destinationData = result[0];
 }
 
-// 3. Jika ID tidak ditemukan, arahkan kembali ke dashboard
 if (!destinationData) return Astro.redirect("/admin");
 ---
 

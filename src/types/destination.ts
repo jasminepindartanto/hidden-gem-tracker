@@ -1,4 +1,4 @@
-export interface Destination = {
+export type Destination = {
   id: number;
 
   provinsi: string;
