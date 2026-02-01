@@ -4,19 +4,21 @@ import AdminLayout from "@/layouts/AdminLayout.astro";
 import { DestinationForm } from "@/components/admin/DestinationForm";
 import sql from "@/lib/db";
 
+// 1. Ambil ID dari URL
 const id = Astro.url.searchParams.get("id");
 
+// 2. LOGIKA UPDATE (Hanya jalan saat tombol Simpan diklik)
 if (Astro.request.method === "POST") {
   try {
     const data = await Astro.request.formData();
     
-    // Pastikan pemrosesan array taqs benar agar tidak error malformed array
     const tagsRaw = data.get("tags")?.toString() || "";
     const tagsArray = tagsRaw.split(",").map(t => t.trim()).filter(t => t !== "");
 
     await sql`
       UPDATE lokasi_wisata SET
         dtw = ${data.get("dtw")?.toString() || ""},
+        kategori_akses = ${data.get("kategori_akses")?.toString() || 'non-hidden'},
         tags = ${tagsArray}, 
         rating = ${parseFloat(data.get("rating")?.toString() || "0")},
         lokasi = ${data.get("lokasi")?.toString() || ""},
@@ -27,25 +29,23 @@ if (Astro.request.method === "POST") {
       WHERE id = ${id}
     `;
 
-    return Astro.redirect("/admin?success=updated");
+    return Astro.redirect("/admin/destination", 303);
   } catch (error) {
     console.error("Gagal update database:", error);
   }
 }
 
+// 3. AMBIL DATA AWAL (Untuk mengisi form saat halaman dibuka)
 let destinationData = null;
 if (id) {
-  // PERBAIKAN: Ubah 'tags' menjadi 'taqs'
   const result = await sql`
-    SELECT id, provinsi, kotakabupaten, dtw, latitude, longitude, 
-           deskripsi_lengkap, url_foto, author, lokasi, tags, rating 
-    FROM lokasi_wisata 
-    WHERE id = ${id}
+    SELECT * FROM lokasi_wisata WHERE id = ${id}
   `;
   destinationData = result[0];
 }
 
-if (!destinationData) return Astro.redirect("/admin");
+// Redirect jika data tidak ditemukan
+if (!destinationData) return Astro.redirect("/admin/destination");
 ---
 
 <AdminLayout title="Edit Destination" description="Perbarui informasi tempat wisata">
@@ -56,6 +56,7 @@ if (!destinationData) return Astro.redirect("/admin");
     </header>
 
     <div class="bg-white p-8 md:p-12 rounded-[40px] border border-slate-100 shadow-xl">
+      {/* Pastikan initialData diteruskan dengan benar */}
       <DestinationForm client:load mode="edit" initialData={destinationData} />
     </div>
   </main>

@@ -49,10 +49,10 @@ export const RecentDestination = ({ data }: Props) => {
               <td className="px-6 py-5 text-right">
                 {/* Menggunakan tag <a> agar bisa mengarah ke URL edit dengan ID spesifik */}
                 <a 
-                  href={`/admin/destination/edit?id=${item.id}`} 
-                  className="inline-block text-xs font-bold text-slate-400 hover:text-emerald-600 transition-colors"
+                  href={`/admin/destination`} 
+                  className="inline-block text-xs font-bold text-slate-400 hover:text-emerald-500 transition-colors uppercase tracking-wider"
                 >
-                  Edit
+                  Liat Selengkapnya
                 </a>
               </td>
             </tr>

@@ -33,13 +33,13 @@ const { title, description, className } = Astro.props;
 
   <body class="bg-slate-50 text-slate-900 antialiased"> 
     <div class="flex min-h-screen flex-col">
-      <AdminNavbar client:load /> 
+      <AdminNavbar /> 
       <main class="flex-1">
         <div class={cn(className ? className : "max-w-7xl mx-auto px-4 md:px-8 py-10")}>
           <slot />
         </div>
       </main>
     </div>
-    <Toaster client:load />
+    <Toaster/>
   </body>
 </html>

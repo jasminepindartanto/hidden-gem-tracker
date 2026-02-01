@@ -1,16 +1,57 @@
 ---
-// src/pages/admin/destinations/add.astro
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { DestinationForm } from "@/components/admin/DestinationForm";
+import sql from "@/lib/db";
+
+if (Astro.request.method === "POST") {
+  try {
+    const data = await Astro.request.formData();
+    
+    // Log untuk memastikan data sampai ke server (cek terminal VS Code)
+    console.log("Data Form Diterima:", Object.fromEntries(data));
+
+    // Ambil tags dan bersihkan menjadi array
+    const tagsRaw = data.get("tags")?.toString() || "";
+    const tagsArray = tagsRaw.split(",").map(t => t.trim()).filter(t => t !== "");
+
+    // Query INSERT
+    await sql`
+      INSERT INTO lokasi_wisata (
+        dtw, kategori_akses, tags, rating, lokasi, 
+        latitude, longitude, deskripsi_lengkap, url_foto, 
+        featured, tanggal
+      ) VALUES (
+        ${data.get("dtw")?.toString() || ""},
+        ${data.get("kategori_akses")?.toString() || "non-hidden"},
+        ${tagsArray},
+        ${parseFloat(data.get("rating")?.toString() || "0")},
+        ${data.get("lokasi")?.toString() || ""},
+        ${parseFloat(data.get("latitude")?.toString() || "0")},
+        ${parseFloat(data.get("longitude")?.toString() || "0")},
+        ${data.get("deskripsi_lengkap")?.toString() || ""},
+        ${data.get("url_foto")?.toString() || ""},
+        ${data.get("featured") === "true"}, -- Konversi string 'true' jadi boolean true
+        NOW()
+      )
+    `;
+
+    // Berhasil simpan, arahkan ke daftar
+    return Astro.redirect("/admin/destination", 303);
+  } catch (error) {
+    console.error("Gagal Simpan Database:", error);
+  }
+}
 ---
 
-<AdminLayout title="Add New Destination" description="Create a new hidden gem entry">
-  <main class="max-w-7xl mx-auto px-4 md:px-8 py-10">
-    <header class="mb-10">
-      <h1 class="text-3xl font-bold text-slate-900 font-noto-serif">Add New Destination</h1>
-      <p class="text-slate-500 mt-1">Fill in the details to publish a new hidden gem in Bandung.</p>
+<AdminLayout title="Add Destination" description="Tambah Wisata Baru">
+  <main class="max-w-4xl mx-auto px-4 py-16">
+    <header class="mb-10 text-center">
+      <h1 class="text-4xl font-bold text-slate-900 font-noto-serif">Add New Destination</h1>
+      <p class="mt-2 text-slate-500">Isi detail lengkap tempat wisata baru.</p>
     </header>
 
-    <DestinationForm client:load />
+    <div class="bg-white p-8 md:p-12 rounded-[40px] border border-slate-100 shadow-xl">
+      <DestinationForm client:load mode="add" />
+    </div>
   </main>
 </AdminLayout>
