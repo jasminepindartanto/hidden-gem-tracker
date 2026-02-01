@@ -1,15 +1,23 @@
 ---
 import { getCollection } from "astro:content";
 import BlogCard from "@/components/blog/BlogCard.astro";
-import CardCover from "@/components/knowledge-card/CardCover.astro";
 import HeroSection from "@/components/landing-page/HeroSection.astro";
 import LatestSection from "@/components/landing-page/LatestSection.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "@/consts";
 import MainLayout from "@/layouts/MainLayout.astro";
 import sql from "@/lib/db";
 
-// 1. Ambil data DESTINASI dari DATABASE
-const dbResult = await sql`SELECT * FROM lokasi_wisata ORDER BY tanggal DESC LIMIT 3`;
+/**
+ * 1. AMBIL DATA DESTINASI (CURATED FOR YOU)
+ * Diurutkan berdasarkan kategori 'hidden' terlebih dahulu, baru tanggal terbaru.
+ */
+const dbResult = await sql`
+  SELECT * FROM lokasi_wisata 
+  ORDER BY 
+    CASE WHEN kategori_akses = 'hidden' THEN 0 ELSE 1 END, 
+    tanggal DESC 
+  LIMIT 3
+`;
 
 const posts = dbResult.map((item) => ({
   id: item.id.toString(),
@@ -20,64 +28,60 @@ const posts = dbResult.map((item) => ({
   image: item.url_foto,
   pubDate: new Date(item.tanggal),
   author: item.author || "Admin",
-  tags: item.tags || []
+  tags: item.tags || [],
+  kategori_akses: item.kategori_akses // Pastikan dikirim ke BlogCard
 }));
 
-// 2. LOGIKA NEAR YOU: Menghitung jarak dari Coblong (-6.8844, 107.6135)
+/**
+ * 2. LOGIKA NEAR YOU
+ * Menghitung jarak dari Coblong, diprioritaskan untuk kategori hidden terdekat.
+ */
 const nearYouResult = await sql`
   SELECT *, 
   (6371 * acos(cos(radians(-6.8844)) * cos(radians(latitude)) * cos(radians(longitude) - radians(107.6135)) + sin(radians(-6.8844)) * sin(radians(latitude)))) AS jarak
   FROM lokasi_wisata 
-  ORDER BY jarak ASC 
+  ORDER BY 
+    CASE WHEN kategori_akses = 'hidden' THEN 0 ELSE 1 END,
+    jarak ASC 
   LIMIT 4
 `;
 
+/**
+ * 3. LOGIKA RECENT REVIEWS
+ * Menampilkan ulasan terbaru, diprioritaskan untuk lokasi berkategori hidden.
+ */
 const recentReviews = await sql`
   SELECT 
     u.nama_user, 
     u.rating, 
     u.komentar, 
-    l.dtw as nama_lokasi 
+    l.dtw as nama_lokasi,
+    l.kategori_akses 
   FROM ulasan u 
   LEFT JOIN lokasi_wisata l ON u.lokasi_id = l.id 
-  ORDER BY u.tanggal DESC
+  ORDER BY 
+    CASE WHEN l.kategori_akses = 'hidden' THEN 0 ELSE 1 END,
+    u.tanggal DESC
   LIMIT 3
 `;
 
-// 2. Ambil data CARDS & SLIDES (Masih Statis dari Content Collection)
+// Ambil data Content Collection (Cards & Slides)
 const allCards = (await getCollection("cards"))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .map((card) => ({
-    id: card.id,
-    title: card.data.title,
-    template: card.data.template,
-    tags: card.data.tags,
-  }));
-  
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 const allSlides = (await getCollection("slides"))
   .filter((slide) => slide.data.pubDate)
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .map((slide) => ({
-    id: slide.id,
-    title: slide.data.title,
-    description: slide.data.description,
-    author: slide.data.author,
-    pubDate: slide.data.pubDate,
-    tags: slide.data.tags,
-  }));
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
-// 3. Gabungkan semua Tags untuk Hero Search
+// Gabungkan Tags untuk Search
 const allTags = [
   ...posts.flatMap((post) => post.tags || []),
-  ...allCards.flatMap((card) => card.tags || []),
-  ...allSlides.flatMap((slide) => slide.tags || []),
+  ...allCards.flatMap((card) => card.data.tags || []),
+  ...allSlides.flatMap((slide) => slide.data.tags || []),
 ];
 const uniqueTags = [...new Set(allTags)];
 
-const cards = allCards.slice(0, 6);
-
-// 4. Ambil Active Doodle
+// Ambil Active Doodle
 const now = new Date();
 const activeDoodleEntry = (await getCollection("doodles"))
   .filter((doodle) => doodle.data.pubDate <= now && doodle.data.endDate >= now)
@@ -91,11 +95,22 @@ const sessionId = Astro.cookies.get("session")?.value;
 const isLoggedIn = !!sessionId;
 ---
 
-<MainLayout
-  title={`Home | ${SITE_TITLE}`}
-  description={SITE_DESCRIPTION}
-  className="w-full p-0"
->
+<style is:global>
+  /* Animasi Kilau Global untuk elemen Hidden Gem */
+  @keyframes shine {
+    0% { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(250%) skewX(-15deg); }
+  }
+  .animate-shine {
+    animation: shine 3s infinite linear;
+  }
+  .glow-hidden {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4) !important;
+    border-color: rgba(16, 185, 129, 0.6) !important;
+  }
+</style>
+
+<MainLayout title={`Home | ${SITE_TITLE}`} description={SITE_DESCRIPTION} className="w-full p-0">
   <HeroSection uniqueTags={uniqueTags} doodle={activeDoodle} isLoggedIn={isLoggedIn}/>
 
   <div class="px-4 md:px-8 lg:px-12 max-w-7xl mx-auto">
@@ -119,23 +134,24 @@ const isLoggedIn = !!sessionId;
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-16">
         {nearYouResult.map((item) => (
-          <a href={`/blogs/${item.id}`} class="flex items-center gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer group">
-            <div class="w-16 h-16 rounded-xl bg-slate-200 overflow-hidden flex-shrink-0">
-              <img 
-                src={item.url_foto} 
-                alt={item.dtw} 
-                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
-              />
+          <a href={`/blogs/${item.id}`} 
+             class={`relative overflow-hidden flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer group
+             ${item.kategori_akses === 'hidden' ? 'bg-slate-900 border-emerald-500/50 glow-hidden' : 'bg-white border-slate-100 shadow-sm'}`}>
+            
+            {item.kategori_akses === 'hidden' && (
+              <div class="absolute inset-0 pointer-events-none overflow-hidden">
+                <div class="w-1/2 h-full absolute top-0 left-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shine"></div>
+              </div>
+            )}
+            
+            <div class="w-16 h-16 rounded-xl bg-slate-200 overflow-hidden flex-shrink-0 relative z-10">
+              <img src={item.url_foto} alt={item.dtw} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
             </div>
-            <div class="overflow-hidden">
-              <h4 class="font-bold text-slate-800 text-sm truncate">{item.dtw}</h4>
-              <p class="text-[11px] text-slate-500 mt-0.5">
+            <div class="overflow-hidden relative z-10">
+              <h4 class={`font-bold text-sm truncate ${item.kategori_akses === 'hidden' ? 'text-emerald-400' : 'text-slate-800'}`}>{item.dtw}</h4>
+              <p class={`text-[11px] mt-0.5 ${item.kategori_akses === 'hidden' ? 'text-slate-400' : 'text-slate-500'}`}>
                 {item.jarak.toFixed(1)} km away • {(item.lokasi || "").split(',')[0]}
               </p>
-              <div class="flex items-center gap-1 mt-1.5">
-                <span class="text-yellow-400 text-[11px]">⭐</span>
-                <span class="text-[11px] font-bold text-slate-700">{Number(item.rating).toFixed(1)}</span>
-              </div>
             </div>
           </a>
         ))}
@@ -153,33 +169,32 @@ const isLoggedIn = !!sessionId;
     </section>
 
     <section class="mt-24 mb-24">
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
-        <h2 class="text-3xl font-bold text-white mb-2 font-noto-serif">Recent Community Reviews</h2>
+      <div class="mb-10 text-center">
+        <h2 class="text-3xl font-bold text-white mb-2 font-noto-serif">Community Experiences</h2>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         {recentReviews.map((rev) => (
-          <div class="bg-white p-8 rounded-[32px] shadow-sm hover:shadow-md transition-all border border-slate-100 flex flex-col justify-between">
-            <div>
+          <div class={`relative overflow-hidden p-8 rounded-[32px] transition-all border flex flex-col justify-between
+            ${rev.kategori_akses === 'hidden' ? 'bg-slate-900 border-emerald-500/50 glow-hidden' : 'bg-white border-slate-100 shadow-sm'}`}>
+            
+            {rev.kategori_akses === 'hidden' && (
+              <div class="absolute inset-0 pointer-events-none">
+                <div class="w-full h-full absolute top-0 left-0 bg-gradient-to-r from-transparent via-emerald-400/5 to-transparent animate-shine"></div>
+              </div>
+            )}
+            
+            <div class="relative z-10">
               <div class="flex items-center gap-4 mb-6">
-                <div class="w-12 h-12 rounded-full bg-[#1e2f28] flex items-center justify-center font-bold text-emerald-100 text-sm uppercase">
+                <div class={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm uppercase ${rev.kategori_akses === 'hidden' ? 'bg-emerald-500 text-slate-900' : 'bg-[#1e2f28] text-emerald-100'}`}>
                   {rev.nama_user.substring(0, 2)}
                 </div>
                 <div>
-                  <p class="text-slate-900 font-bold text-sm leading-none mb-1">{rev.nama_user}</p>
-                  <p class="text-slate-500 text-[11px]">Reviewing: <span class="font-medium text-slate-700">{rev.nama_lokasi}</span></p>
+                  <p class={`font-bold text-sm mb-1 ${rev.kategori_akses === 'hidden' ? 'text-white' : 'text-slate-900'}`}>{rev.nama_user}</p>
+                  <p class={`text-[11px] ${rev.kategori_akses === 'hidden' ? 'text-emerald-400' : 'text-slate-500'}`}>Reviewing: <span class="font-bold">{rev.nama_lokasi}</span></p>
                 </div>
               </div>
-              
-              <div class="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <span class={`text-[12px] ${i < rev.rating ? 'text-yellow-400' : 'text-slate-200'}`}>
-                    ★
-                  </span>
-                ))}
-              </div>
-
-              <p class="text-slate-600 text-sm italic leading-relaxed">
+              <p class={`${rev.kategori_akses === 'hidden' ? 'text-slate-300' : 'text-slate-600'} text-sm italic leading-relaxed`}>
                 "{rev.komentar}"
               </p>
             </div>

@@ -4,7 +4,6 @@ import sitemap from "sitemap-ext:config";
 import FormattedDate from "@/components/FormattedDate.astro";
 import { ImageViewer } from "@/components/image-viewer";
 import ContentNavigation from "@/components/navigation/ContentNavigation.astro";
-import ShareButtons from "@/components/ShareButtons.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "@/consts";
 import MainLayout from "@/layouts/MainLayout.astro";
 import { getAdjacentContent } from "@/lib/navigation";
@@ -58,13 +57,8 @@ const adjacentContent = getAdjacentContent(allDoodles, doodle.id);
         <h1 class="mb-2 font-serif">{title}</h1>
       </div>
       <div class="flex items-center justify-between">
-        <div><FormattedDate date={doodle.data.pubDate} /></div>
+        <!-- <div><FormattedDate date={doodle.data.pubDate} /></div> -->
         <div class="flex items-center gap-2 lg:justify-end">
-          <ShareButtons
-            url={`${origin}/doodles/${doodle.id}`}
-            title={title}
-            description={description}
-          />
         </div>
       </div>
       <hr />

@@ -5,7 +5,6 @@ import MainLayout from "@/layouts/MainLayout.astro";
 
 <MainLayout
   title={`Travel Map | ${SITE_TITLE}`}
-  description="Peta rute dari titik acuan ke destinasi wisata."
   className="w-full p-0"
 >
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -14,8 +13,8 @@ import MainLayout from "@/layouts/MainLayout.astro";
   <div class="px-4 md:px-8 lg:px-12 max-w-7xl mx-auto py-16">
     <div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
       <div>
-        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 font-noto-serif">Direction Guide</h1>
-        <p class="text-slate-400 font-medium">Mulai perjalanan Anda dari titik acuan atau lokasi saat ini.</p>
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 font-noto-serif tracking-tight">Direction Guide</h1>
+        <p class="text-slate-400 font-medium">Temukan rute terbaik menuju Hidden Gem favorit Anda.</p>
       </div>
 
       <div class="w-full md:w-80">
@@ -33,7 +32,7 @@ import MainLayout from "@/layouts/MainLayout.astro";
           Destinasi Terdekat
         </h2>
         <div id="nearest-list" class="space-y-6 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
-          <p class="text-slate-500 italic text-sm text-center py-10">Menentukan rute terbaik...</p>
+          <p class="text-slate-500 italic text-sm text-center py-10">Menghitung jarak...</p>
         </div>
       </div>
 
@@ -55,6 +54,19 @@ import MainLayout from "@/layouts/MainLayout.astro";
 <script is:inline src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
 
 <script is:inline>
+  function handleAutoRoute() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const destLat = urlParams.get('lat');
+    const destLng = urlParams.get('lng');
+
+    // Pastikan fungsi getDirections sudah terdefinisi di skrip peta Anda
+    if (destLat && destLng && typeof window.getDirections === 'function') {
+      window.getDirections(parseFloat(destLat), parseFloat(destLng));
+    }
+  }
+
+  // Jalankan setelah peta Leaflet selesai dimuat
+  window.addEventListener('load', handleAutoRoute);
   function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -73,13 +85,15 @@ import MainLayout from "@/layouts/MainLayout.astro";
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    const createCustomIcon = (isUser = false) => {
-      const color = isUser ? '#2563eb' : '#064e3b'; 
+    const createCustomIcon = (isUser = false, isHidden = false) => {
+      const color = isUser ? '#2563eb' : (isHidden ? '#f59e0b' : '#064e3b'); 
+      const glowClass = isHidden ? 'glow-active' : '';
+
       return L.divIcon({
         className: 'custom-div-icon',
-        html: `<div class="marker-container ${isUser ? 'user-icon' : ''}">
+        html: `<div class="marker-container ${isUser ? 'user-icon' : ''} ${glowClass}">
                 <div class="ping-effect"></div>
-                <div class="marker-bounce" style="background: ${color};">
+                <div class="marker-bounce" style="background: ${color}; border: ${isHidden ? '2px solid #fff' : 'none'}">
                   <svg viewBox="0 0 24 24" fill="white" style="width:18px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
                 </div>
               </div>`,
@@ -88,10 +102,7 @@ import MainLayout from "@/layouts/MainLayout.astro";
     };
 
     window.getDirections = function(lat, lng) {
-      if (!userLatLng) {
-          alert("Lokasi awal belum ditentukan!");
-          return;
-      }
+      if (!userLatLng) return;
       if (routingControl) map.removeControl(routingControl);
       routingControl = L.Routing.control({
         waypoints: [L.latLng(userLatLng.lat, userLatLng.lng), L.latLng(lat, lng)],
@@ -100,11 +111,6 @@ import MainLayout from "@/layouts/MainLayout.astro";
         addWaypoints: false,
         show: true
       }).addTo(map);
-      
-      // Scroll ke peta jika di mobile
-      if (window.innerWidth < 1024) {
-          document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
-      }
     };
 
     function renderNearestList(currentLat, currentLng) {
@@ -112,30 +118,32 @@ import MainLayout from "@/layouts/MainLayout.astro";
       const sortedDest = destinations.map(d => ({
         ...d,
         distance: calculateDistance(currentLat, currentLng, d.lat, d.lng)
-      })).sort((a, b) => a.distance - b.distance).slice(0, 5);
+      })).sort((a, b) => a.distance - b.distance).slice(0, 10);
 
-      listContainer.innerHTML = sortedDest.map((dest, index) => `
-        <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl overflow-hidden hover:border-emerald-500/50 transition-all group shadow-lg">
-          <div class="relative h-32 w-full overflow-hidden">
-            <img src="${dest.photo}" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-500" />
-            <div class="absolute top-2 left-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg">#${index + 1} Terdekat</div>
-            <div class="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md text-white text-[10px] px-2 py-1 rounded-md">★ ${dest.rating}</div>
-          </div>
-          <div class="p-4">
-            <h3 class="text-white font-bold text-sm line-clamp-1 mb-1">${dest.dtw}</h3>
-            <p class="text-emerald-400 font-bold text-xs mb-3">${dest.distance.toFixed(1)} km dari titik awal</p>
-            
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="getDirections(${dest.lat}, ${dest.lng})" class="bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-lg text-[10px] font-bold transition-colors">
-                    Lihat Rute
-                </button>
-                <a href="/blogs/${dest.id}" class="bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-[10px] font-bold transition-colors text-center flex items-center justify-center">
-                    Detail
-                </a>
+      listContainer.innerHTML = sortedDest.map((dest, index) => {
+        const isHidden = dest.kategori === 'hidden';
+        // Tambahkan class 'glow-card' jika destinasi hidden
+        const glowClass = isHidden ? 'glow-card' : 'border-slate-700/50';
+
+        return `
+          <div class="bg-slate-800/40 border rounded-2xl overflow-hidden hover:border-emerald-500/50 transition-all group shadow-lg ${glowClass}">
+            <div class="relative h-32 w-full overflow-hidden">
+              <img src="${dest.photo}" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-500" />
+              <div class="absolute top-2 left-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-lg">#${index + 1} Terdekat</div>
+              ${isHidden ? '<div class="absolute top-2 right-2 bg-amber-500 text-white text-[9px] px-2 py-1 rounded-lg shadow-lg animate-pulse font-bold tracking-tighter">✨ HIDDEN GEM</div>' : ''}
+              <div class="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md text-white text-[10px] px-2 py-1 rounded-md">★ ${dest.rating}</div>
+            </div>
+            <div class="p-4">
+              <h3 class="text-white font-bold text-sm line-clamp-1 mb-1">${dest.dtw}</h3>
+              <p class="text-emerald-400 font-bold text-xs mb-3">${dest.distance.toFixed(1)} km dari titik awal</p>
+              <div class="grid grid-cols-2 gap-2">
+                  <button onclick="getDirections(${dest.lat}, ${dest.lng})" class="bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-lg text-[10px] font-bold transition-colors">Lihat Rute</button>
+                  <a href="/blogs/${dest.id}" class="bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-[10px] font-bold transition-colors text-center flex items-center justify-center">Detail</a>
+              </div>
             </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     async function fetchPoints() {
@@ -149,11 +157,11 @@ import MainLayout from "@/layouts/MainLayout.astro";
         const wisataData = await resDest.json();
 
         const select = document.getElementById('start-point-select');
-        startPoints.forEach(point => {
-          const option = document.createElement('option');
-          option.value = `${point.latitude},${point.longitude}`;
-          option.textContent = point.nama_lokasi;
-          select.appendChild(option);
+        startPoints.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = `${p.latitude},${p.longitude}`;
+          opt.textContent = p.nama_lokasi;
+          select.appendChild(opt);
         });
 
         wisataData.forEach(dest => {
@@ -161,40 +169,31 @@ import MainLayout from "@/layouts/MainLayout.astro";
           const lng = parseFloat(dest.longitude);
           if (isNaN(lat) || isNaN(lng)) return;
 
+          const kategori = dest.kategori_akses; // Sesuai kolom kategori_akses
+
           destinations.push({ 
             lat, lng, dtw: dest.dtw, 
-            id: dest.id,
-            addr: dest.lokasi || `${dest.kotakabupaten}, ${dest.provinsi}`, 
-            photo: dest.url_foto || 'https://images.unsplash.com/photo-1506461883276-594a12b11cf3?w=300',
+            id: dest.id, kategori: kategori,
+            photo: dest.url_foto || 'https://via.placeholder.com/300',
             rating: dest.rating || '0.0'
           });
 
-          L.marker([lat, lng], { icon: createCustomIcon(false) }).addTo(map)
-           .bindPopup(`
-                <div class="p-2 min-w-[150px]">
-                    <b class="text-slate-900 block mb-1 text-sm">${dest.dtw}</b>
-                    <p class="text-slate-500 text-[10px] mb-3 line-clamp-1">${dest.lokasi || ''}</p>
-                    <div class="flex flex-col gap-1.5">
-                        <button onclick="getDirections(${lat}, ${lng})" class="bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold w-full">Arahkan Rute</button>
-                        <a href="/blogs/${dest.id}" class="bg-slate-800 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold w-full text-center">Detail Destinations</a>
-                    </div>
-                </div>
-           `);
+          L.marker([lat, lng], { icon: createCustomIcon(false, kategori === 'hidden') }).addTo(map)
+           .bindPopup(`<b class="text-slate-900">${dest.dtw}</b><br><button onclick="getDirections(${lat}, ${lng})" class="bg-emerald-500 text-white px-2 py-1 rounded mt-2 text-xs w-full">Rute</button>`);
         });
-      } catch (e) { console.error("Database Error:", e); }
+      } catch (e) { console.error(e); }
     }
 
     function updateUserMarker(lat, lng) {
       userLatLng = { lat, lng };
       if (userMarker) map.removeLayer(userMarker);
       userMarker = L.marker([lat, lng], { icon: createCustomIcon(true) }).addTo(map)
-                    .bindTooltip("Mulai dari sini", { permanent: true, direction: 'top', className: 'label-user' });
+                    .bindTooltip("Titik Awal", { permanent: true, direction: 'top', className: 'label-user' });
       map.setView([lat, lng], 14);
       renderNearestList(lat, lng);
     }
 
-    const select = document.getElementById('start-point-select');
-    select.addEventListener('change', (e) => {
+    document.getElementById('start-point-select').addEventListener('change', (e) => {
       if (e.target.value === 'gps') map.locate({setView: true});
       else {
         const [lat, lng] = e.target.value.split(',').map(Number);
@@ -203,7 +202,6 @@ import MainLayout from "@/layouts/MainLayout.astro";
     });
 
     await fetchPoints();
-
     map.locate({setView: true, maxZoom: 14});
     map.on('locationfound', (e) => {
       updateUserMarker(e.latlng.lat, e.latlng.lng);
@@ -215,26 +213,65 @@ import MainLayout from "@/layouts/MainLayout.astro";
 </script>
 
 <style is:global>
+  /* EFEK BERKILAU UNTUK KARTU (CARD) HIDDEN GEM */
+  .glow-card {
+    border: 2px solid #f59e0b !important;
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.4) !important;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glow-card::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      45deg,
+      transparent,
+      rgba(245, 158, 11, 0.1),
+      transparent
+    );
+    transform: rotate(45deg);
+    animation: card-shine 3s infinite;
+  }
+
+  @keyframes card-shine {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  /* EFEK BERKILAU UNTUK TITIK (MARKER) */
+  @keyframes glow-pulse {
+    from { box-shadow: 0 0 10px #f59e0b, 0 0 20px rgba(245, 158, 11, 0.4); }
+    to { box-shadow: 0 0 25px #f59e0b, 0 0 45px rgba(245, 158, 11, 0.8); }
+  }
+
+  .glow-active .marker-bounce {
+    animation: bounce 2s infinite ease-in-out, glow-pulse 1.5s infinite alternate !important;
+    background: #f59e0b !important;
+  }
+
+  /* Styling Tambahan */
   .custom-scrollbar::-webkit-scrollbar { width: 4px; }
   .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-  
   @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } }
   @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
   .ping-effect { position: absolute; width: 45px; height: 45px; border-radius: 50%; background: rgba(16, 185, 129, 0.4); animation: ping 1.8s infinite; }
-  .marker-bounce { position: relative; width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.5); animation: bounce 2s infinite ease-in-out; }
-  
+  .marker-bounce { position: relative; width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
   .label-user { background: #2563eb !important; color: white !important; border-radius: 6px !important; font-size: 10px !important; border: none !important; font-weight: bold; }
   
-  /* Routing Panel Style */
   .leaflet-routing-container { 
       background: #1e293b !important; 
       color: white !important; 
       border-radius: 16px !important; 
-      font-family: inherit !important; 
       font-size: 11px !important;
       border: 1px solid #334155 !important;
       padding: 12px !important;
       max-height: 300px !important;
+      width: 280px !important;
   }
-  .leaflet-routing-alt { border-bottom: 1px solid #334155 !important; }
+  
 </style>

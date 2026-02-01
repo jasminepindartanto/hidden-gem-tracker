@@ -1,7 +1,6 @@
 ---
 import MainLayout from "@/layouts/MainLayout.astro";
 import FormattedDate from "@/components/FormattedDate.astro";
-import ShareButtons from "@/components/ShareButtons.astro";
 import ContentNavigation from "@/components/navigation/ContentNavigation.astro";
 import LocationSidebar from "@/components/LocationSidebar.astro";
 import sql from "@/lib/db";
@@ -56,11 +55,7 @@ const origin = Astro.url.origin;
               ⭐ {Number(post.rating).toFixed(1)}
             </span>
           </div>
-          <ShareButtons
-            url={`${origin}/blogs/${post.id}`}
-            title={post.dtw}
-            description={post.deskripsi_lengkap?.substring(0, 100)}
-          />
+         
         </div>
       </div>
     </div>
