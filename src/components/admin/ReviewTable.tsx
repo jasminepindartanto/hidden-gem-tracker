@@ -17,15 +17,20 @@ export const ReviewTable = ({ data }: { data: Review[] }) => {
     if (!confirm("Hapus ulasan ini secara permanen?")) return;
     
     try {
-      const res = await fetch(`/api/admin/reviews?id=${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/review?id=${id}`, { method: 'DELETE' });
+      
+      if (res.status === 404) {
+        console.error("Error: File API tidak ditemukan di src/pages/api/admin/review.ts");
+        toast.error("Endpoint API tidak ditemukan!");
+        return;
+      }
+
       if (res.ok) {
-        toast.success("Ulasan berhasil dihapus");
+        toast.success("Berhasil dihapus");
         window.location.reload();
-      } else {
-        toast.error("Gagal menghapus ulasan");
       }
     } catch (error) {
-      toast.error("Terjadi kesalahan server");
+      console.error("Gagal melakukan fetch:", error);
     }
   };
 

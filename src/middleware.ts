@@ -27,14 +27,21 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  // Proteksi admin
+  // PROTEKSI ADMIN
   if (path.startsWith("/admin") && !isPublicPage) {
-    if (!isLoggedIn) {
-      return context.redirect("/auth/login");
+    if (!sessionId) {
+      return context.redirect("/auth/login?error=session_expired");
     }
+    
+    // Pastikan pengecekan teks 'admin' konsisten
     if (userRole !== "admin") {
-      return context.redirect("/?error=unauthorized");
+      // SAMAKAN TEKS INI DENGAN SCRIPT DI LAYOUT
+      return context.redirect("/?error=unauthorized"); 
     }
+  }
+
+  if (sessionId && isPublicPage) {
+    return context.redirect(userRole === "admin" ? "/admin" : "/");
   }
 
   // Jangan redirect API

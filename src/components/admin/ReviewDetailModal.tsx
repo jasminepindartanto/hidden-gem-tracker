@@ -1,4 +1,29 @@
 import React from 'react';
+// Fungsi untuk Menghapus (Delete)
+const handleDelete = async (id: number) => {
+    if (!confirm("Hapus ulasan ini secara permanen?")) return;
+
+    const res = await fetch(`/api/admin/reviews?id=${id}`, { 
+        method: 'DELETE' 
+    });
+
+    if (res.ok) {
+        window.location.reload(); // Refresh halaman setelah hapus
+    }
+};
+
+// Fungsi untuk Menyembunyikan (Hide/Update Status)
+const handleHide = async (id: number) => {
+    const res = await fetch(`/api/admin/reviews`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: 'hidden' })
+    });
+
+    if (res.ok) {
+        window.location.reload();
+    }
+};
 
 export const ReviewDetailModal = ({ review, onClose }: any) => {
   return (
@@ -62,12 +87,17 @@ export const ReviewDetailModal = ({ review, onClose }: any) => {
 
         {/* Footer Actions: Sesuai permintaan (Hanya Delete & Hide) */}
         <div className="px-8 py-6 bg-slate-50/50 flex justify-start items-center gap-4">
-            <button className="flex items-center gap-2 text-xs font-bold text-red-500 hover:bg-red-50 px-5 py-3 rounded-xl transition-all active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            <button 
+                onClick={() => handleDelete(review.id)} // GANTI item.id JADI review.id
+                className="..."
+            >
                 Delete Permanently
             </button>
-            <button className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:bg-slate-200 px-5 py-3 rounded-xl transition-all active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+
+            <button 
+                onClick={() => handleHide(review.id)} // GANTI item.id JADI review.id
+                className="..."
+            >
                 Hide Review
             </button>
         </div>
