@@ -1,6 +1,6 @@
 ---
 import AdminLayout from "@/layouts/AdminLayout.astro";
-import { DestinationForm } from "@/components/admin/DestinationForm";
+import DestinationForm from "@/components/admin/DestinationForm.astro";
 import sql from "@/lib/db";
 
 if (Astro.request.method === "POST") {
@@ -51,7 +51,7 @@ if (Astro.request.method === "POST") {
     </header>
 
     <div class="bg-white p-8 md:p-12 rounded-[40px] border border-slate-100 shadow-xl">
-      <DestinationForm client:load mode="add" />
+      <DestinationForm mode="add" />
     </div>
   </main>
 </AdminLayout>

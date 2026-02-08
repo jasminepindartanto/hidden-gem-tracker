@@ -1,7 +1,7 @@
 ---
 // src/pages/admin/destinations/edit.astro
 import AdminLayout from "@/layouts/AdminLayout.astro";
-import { DestinationForm } from "@/components/admin/DestinationForm";
+import DestinationForm from "@/components/admin/DestinationForm.astro";
 import sql from "@/lib/db";
 
 // 1. Ambil ID dari URL
@@ -57,7 +57,7 @@ if (!destinationData) return Astro.redirect("/admin/destination");
 
     <div class="bg-white p-8 md:p-12 rounded-[40px] border border-slate-100 shadow-xl">
       {/* Pastikan initialData diteruskan dengan benar */}
-      <DestinationForm client:load mode="edit" initialData={destinationData} />
+      <DestinationForm mode="edit" initialData={destinationData} />
     </div>
   </main>
 </AdminLayout>

@@ -1,0 +1,237 @@
+---
+interface Destination {
+  id?: number;
+  dtw?: string;
+  lokasi?: string;
+  rating?: number;
+  tags?: string[] | string;
+
+  latitude?: string;
+  longitude?: string;
+
+  deskripsi_lengkap?: string;
+  url_foto?: string;
+
+  kategori_akses?: "hidden" | "non-hidden";
+
+  featured?: boolean | "true" | "false";
+}
+
+interface Props {
+  mode?: "add" | "edit";
+  initialData?: Destination;
+}
+
+const { mode = "add", initialData = {} } = Astro.props as Props;
+const isEdit = mode === "edit";
+
+/* ---------- SAFE VALUE HELPER ---------- */
+const val = (key: keyof Destination): string => {
+  const value = initialData?.[key];
+
+  // tags array → string
+  if (key === "tags" && Array.isArray(value)) {
+    return value.join(", ");
+  }
+
+  // boolean → html string
+  if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  }
+
+  return (value ?? "") as string;
+};
+
+/* ---------- FEATURED ---------- */
+const isFeatured =
+  initialData?.featured === true || initialData?.featured === "true";
+
+/* ---------- AKSES ---------- */
+const kategoriAkses: "hidden" | "non-hidden" =
+  initialData?.kategori_akses ?? "non-hidden";
+
+/* ---------- CSS ---------- */
+const inputClass =
+  "w-full bg-white border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all duration-200 text-slate-800 font-medium placeholder:text-slate-400 hover:border-slate-300";
+
+const labelClass =
+  "block text-sm font-bold text-slate-700 mb-2 cursor-pointer";
+
+const sectionClass =
+  "bg-white p-6 md:p-8 rounded-[32px] border border-slate-100 shadow-sm space-y-6";
+---
+
+  <form
+    method="POST"
+    action="/api/admin/destinations"
+    enctype="multipart/form-data"
+    class="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20"
+  >
+
+  {isEdit && (
+    <>
+      <input type="hidden" name="_method" value="PUT" />
+      <input type="hidden" name="id" value={initialData.id} />
+    </>
+  )}
+
+
+  <div class="lg:col-span-2 space-y-8">
+
+    <div class={sectionClass}>
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-1.5 h-6 bg-emerald-500 rounded-full"></div>
+        <h2 class="text-xl font-bold text-slate-900">General & Location</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div class="md:col-span-2">
+          <label class={labelClass}>Destination Name</label>
+          <input name="dtw" value={val("dtw")} class={inputClass} required />
+        </div>
+
+        <div>
+          <label class={labelClass}>Category / Tags (Gunakan Koma)</label>
+          <input name="tags" value={val("tags")} class={inputClass} />
+        </div>
+
+        <div>
+          <label class={labelClass}>Rating</label>
+          <input type="number" step="0.1" name="rating" value={val("rating")} class={inputClass} />
+        </div>
+
+        <div class="md:col-span-2">
+          <label class={labelClass}>Location Address</label>
+          <input name="lokasi" value={val("lokasi")} class={inputClass} />
+        </div>
+
+        <div>
+          <label class={labelClass}>Latitude</label>
+          <input name="latitude" value={val("latitude")} class={inputClass} />
+        </div>
+
+        <div>
+          <label class={labelClass}>Longitude</label>
+          <input name="longitude" value={val("longitude")} class={inputClass} />
+        </div>
+
+      </div>
+    </div>
+
+    <div class={sectionClass}>
+      <h2 class="text-xl font-bold text-slate-900">Description</h2>
+      <textarea name="deskripsi_lengkap" rows="8" class={`${inputClass} resize-none`}>{val("deskripsi_lengkap")}</textarea>
+    </div>
+
+  </div>
+
+  <div class="space-y-8">
+
+    <div class={sectionClass}>
+      <h2 class="text-xl font-bold text-slate-900 mb-4">Media Gallery</h2>
+      <label class={labelClass}>Upload Photo</label>
+
+     <div class={sectionClass}>
+        <h2 class="text-xl font-bold text-slate-900 mb-4">Media Gallery</h2>
+        <label class={labelClass}>Upload Photo</label>
+
+        <div
+          id="uploadBox"
+          class="relative w-full h-56 border-2 border-dashed border-slate-300 rounded-2xl flex items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/40 transition overflow-hidden"
+        >
+          <input
+            id="fotoInput"
+            type="file"
+            name="foto"
+            accept="image/png, image/jpeg, image/webp"
+            class="hidden"
+          />
+
+          {/* gambar lama (edit) */}
+          {initialData?.url_foto ? (
+            <img
+              id="oldImage"
+              src={initialData.url_foto}
+              class="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : null}
+
+          {/* preview gambar baru */}
+          <img
+            id="previewImage"
+            class="absolute inset-0 w-full h-full object-cover hidden"
+          />
+
+          {/* placeholder */}
+          <div id="placeholder" class="text-center px-4">
+            <div class="text-4xl mb-2">📷</div>
+            <p class="font-semibold text-slate-700">Click to Upload</p>
+            <p class="text-sm text-slate-400">PNG, JPG, WEBP</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class={sectionClass}>
+      <h2 class="text-xl font-bold text-slate-900 mb-6">Settings</h2>
+
+      <div class="space-y-2">
+        <label class={labelClass}>Kategori Akses</label>
+        <select name="kategori_akses" class={inputClass}>
+          <option value="non-hidden" selected={kategoriAkses === "non-hidden"}>Populer (Non-Hidden)</option>
+          <option value="hidden" selected={kategoriAkses === "hidden"}>Hidden Gem</option>
+        </select>
+      </div>
+
+      <input type="hidden" name="featured" value={isFeatured ? "true" : "false"} />
+
+    </div>
+  </div>
+
+  <div class="lg:col-span-3 flex justify-end gap-6 pt-10 border-t border-slate-100">
+    <a href="/admin" class="px-8 py-3.5 font-bold text-slate-500">Cancel</a>
+
+    <button type="submit" class="px-12 py-3.5 font-bold text-white bg-emerald-500 rounded-2xl">
+      {isEdit ? "Update Destination" : "Publish Now"}
+    </button>
+  </div>
+
+</form>
+
+<script is:inline>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const uploadBox = document.getElementById("uploadBox");
+  const input = document.getElementById("fotoInput");
+  const preview = document.getElementById("previewImage");
+  const placeholder = document.getElementById("placeholder");
+  const oldImage = document.getElementById("oldImage");
+
+  if (
+    !(uploadBox instanceof HTMLDivElement) ||
+    !(input instanceof HTMLInputElement) ||
+    !(preview instanceof HTMLImageElement) ||
+    !(placeholder instanceof HTMLDivElement)
+  ) return;
+
+
+  uploadBox.addEventListener("click", () => input.click());
+
+  input.addEventListener("change", () => {
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      preview.style.display = "block";
+      placeholder.style.display = "none";
+      if (oldImage) oldImage.style.display = "none";
+    };
+    reader.readAsDataURL(file);
+  });
+
+});
+</script>

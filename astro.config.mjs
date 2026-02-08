@@ -9,46 +9,61 @@ import { analyzer } from "vite-bundle-analyzer";
 import { env } from "./src/env";
 
 export default defineConfig({
-  server: {
-    // This will allow all hosts to be used in development. Not only localhost.
-    allowedHosts: true,
-  },
-  trailingSlash: "never",
-  output: "server",
+  /* ================= IMAGE (INI YANG PENTING) ================= */
   image: {
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "4321",
+        pathname: "/uploads/**",
+      },
+    ],
     domains: ["public-files.gumroad.com"],
   },
-  output: 'server', // Wajib untuk menjalankan fitur redirect & cookies
-  integrations: [
-    react(), 
-    tailwindcss({
-      applyBaseStyles: false,
-    })
-  ],
-  adapter: vercel({
-    imageService: true,
-  }),
+
+  /* ================= SERVER ================= */
+  output: "server",
+  trailingSlash: "never",
+
+  security: {
+    checkOrigin: false,
+  },
+
   site: env().SITE_URL,
+
+  /* ================= MARKDOWN ================= */
   markdown: {
     rehypePlugins: [rehypeSanitize(defaultSchema)],
   },
+
+  /* ================= INTEGRATIONS ================= */
   integrations: [
-    sitemap({
-      includeByDefault: true,
-    }),
-    mdx({
-      rehypePlugins: [rehypeSanitize(defaultSchema)],
-    }),
     react({
       include: [
         "**/components/image-viewer.tsx",
         "**/components/slide/slide-viewer.tsx",
       ],
     }),
+
+    mdx({
+      rehypePlugins: [rehypeSanitize(defaultSchema)],
+    }),
+
+    sitemap({
+      includeByDefault: true,
+    }),
   ],
+
+  /* ================= ADAPTER ================= */
+  adapter: vercel({
+    imageService: true,
+  }),
+
+  /* ================= VITE ================= */
   vite: {
     plugins: [
-      tailwindcss(),
+      tailwindcss({ applyBaseStyles: false }),
       process.env.ANALYZE &&
         analyzer({
           analyzerMode: "static",
@@ -56,8 +71,5 @@ export default defineConfig({
           openAnalyzer: false,
         }),
     ].filter(Boolean),
-  },
-  security: {
-    checkOrigin: false,
   },
 });
