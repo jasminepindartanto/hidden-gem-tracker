@@ -1,6 +1,27 @@
 ---
 import { Image } from "astro:assets";
-// import ShareButtons from "../ShareButtons.astro";
+import SlideCard from "@/components/slide/SlideCard.astro";
+import sql from "@/lib/db"; // Import koneksi DB Anda
+
+// Ambil data destinasi dari DB untuk dijadikan 'Slide'
+const locations = await sql`
+  SELECT id, dtw as title, author, deskripsi_lengkap as description, 
+         tags, tanggal as "pubDate" 
+  FROM lokasi_wisata 
+  ORDER BY tanggal DESC
+`;
+
+// Map data DB agar sesuai dengan Interface Slide di SlideCard
+const slides = locations.map(loc => ({
+  id: loc.id,
+  title: loc.title,
+  author: loc.author,
+  description: loc.description,
+  tags: loc.tags,
+  pubDate: new Date(loc.pubDate),
+  theme: "black", // Default theme untuk slide
+  transition: "slide"
+}));
 
 export interface Blog {
   id: string;
@@ -170,9 +191,6 @@ const formatDate = (date: Date | string) => {
         </a>
       )}
       
-      <!-- <div class="flex items-center gap-2">
-        <ShareButtons url={url} title={blog.title} description={blog.description} />
-      </div> -->
     </div>
   </div>
 </div>

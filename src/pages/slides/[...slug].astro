@@ -5,7 +5,6 @@ import { posix } from "node:path";
 import sitemap from "sitemap-ext:config";
 import { ImageViewer } from "@/components/image-viewer";
 import ContentNavigation from "@/components/navigation/ContentNavigation.astro";
-// import ShareButtons from "@/components/ShareButtons.astro";
 import { SlideViewer } from "@/components/slide/slide-viewer";
 import { SITE_TITLE } from "@/consts";
 import MainLayout from "@/layouts/MainLayout.astro";
@@ -123,15 +122,6 @@ const coverMD = `## ${slide.data.title}\n${slide.data.author}\n\n${formatDate(sl
   image={ogImageUrl.toString()}
 >
   <div class="slide-container">
-    <div class="slide-share">
-      <!-- <ShareButtons
-        url={`${origin}/slides/${slide.id}`}
-        title={slide.data.title}
-        description={slide.data.description}
-        isPopup={false}
-        variant="slide"
-      />
-    </div> -->
     <SlideViewer
       client:only="react"
       content={`${coverMD}\n---\n${slideMarkdownWithResolvedImages}`}

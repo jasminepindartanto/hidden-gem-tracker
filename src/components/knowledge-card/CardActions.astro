@@ -3,7 +3,6 @@ import { Link } from "lucide-react";
 import OptimizedImage from "@/components/OptimizedImage.astro";
 import { MERMAID_LIVE_BASE_URL } from "../../consts";
 import { CopyButton } from "../copy-button";
-import ShareButtons from "../ShareButtons.astro";
 
 const {
   isFlipped: initialFlipped,
@@ -70,12 +69,6 @@ let isFlipped = initialFlipped;
       client:load
     />
   </div>
-  <ShareButtons
-    url={url}
-    title={articleData.title}
-    description={articleData.description}
-    isPopup={true}
-  />
 </div>
 <script is:inline>
   let isFlipped =
