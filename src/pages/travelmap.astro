@@ -292,16 +292,44 @@ import MainLayout from "@/layouts/MainLayout.astro";
   }
 
   /* Shared styles */
-  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; max-height: 350px }
   .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
   .ping-effect { position: absolute; width: 45px; height: 45px; border-radius: 50%; background: rgba(16, 185, 129, 0.4); animation: ping 1.8s infinite; }
   .marker-bounce { position: relative; width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
   @keyframes ping { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(2.2); opacity: 0; } }
   @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
   
-  .leaflet-routing-container { 
-      background: #1e293b !important; color: white !important; border-radius: 16px !important; 
-      font-size: 11px !important; border: 1px solid #334155 !important; padding: 12px !important;
-      max-height: 250px !important; width: 260px !important;
+  /* 1. Atur wadah utama (styling + scroll logic) */
+  .leaflet-routing-container {
+    background: #1e293b !important;
+    color: white !important;
+    border-radius: 16px !important;
+    font-size: 11px !important;
+    border: 1px solid #334155 !important;
+    padding: 12px !important;
+    width: 260px !important;
+    
+    /* Logika Scroll: Wajib di sini */
+    max-height: 250px !important;
+    overflow-y: auto !important; 
   }
+
+  /* 2. Atur lebar batang scroll */
+  .leaflet-routing-container::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  /* 3. Atur tampilan batang (thumb) scroll */
+  .leaflet-routing-container::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 50px;
+  }
+
+  /* 4. Atur lintasan (track) scroll agar tetap bersih */
+  .leaflet-routing-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  /* .leaflet-routing-container {
+          display: none !important;
+        } */
 </style>
