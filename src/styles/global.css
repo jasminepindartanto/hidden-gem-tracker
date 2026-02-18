@@ -4,81 +4,59 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 142 76% 36%;
-  --primary-foreground: 222.2 84% 4.9%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 142 76% 36%;
-  --radius: 0.625rem;
+  /* BACKGROUND — pastel lime hangat */
+  --background: 66 40% 90%;
+  --foreground: 88 27% 15%; /* #28301C */
 
-  --spacing-xs: 0.25em;
-  --spacing-sm: 0.5em;
-  --spacing-md: 1em;
-  --spacing-lg: 1.5em;
-  --spacing-xl: 2em;
+  /* CARD — creamy white */
+  --card: 0 0% 100% / 0.75;
+  --card-foreground: 88 27% 15%;
+  --popover: 0 0% 100% / 0.9;
+  --popover-foreground: 88 27% 15%;
 
-  --border-radius: 8px;
-  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08);
+  /* PRIMARY — Lime Pastel (#D2DB76) */
+  --primary: 66 58% 66%;
+  --primary-foreground: 88 27% 15%;
 
-  --tea-main: oklch(12.9% 0.042 264.7);
-  --tea-main-light: oklch(30% 0.04 264.7);
-  --tea-secondary: oklch(60% 0.04 264.7);
-  --tea-light: oklch(27.9% 0.041 260.031);
-  --tea-bg: oklch(95% 0.01 264.7);
-  --tea-gray: oklch(86.9% 0.022 252.894);
-  /* slate-300 */
-  --tea-gray-light: oklch(70% 0.01 264.7);
-  --tea-light-alpha: oklch(90% 0.02 264.7 / 0.3);
+  /* SECONDARY — Pink Pastel (#FFC3CC) */
+  --secondary: 350 100% 88%;
+  --secondary-foreground: 88 27% 15%;
+
+  /* ACCENT — darker olive hover color */
+  --accent: 88 27% 25%;
+  --accent-foreground: 0 0% 100%;
+
+  --muted: 66 30% 80%;
+  --muted-foreground: 88 15% 35%;
+
+  --destructive: 0 72% 55%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 66 25% 70%;
+  --input: 66 25% 70%;
+  --ring: 66 58% 66%;
+
+  --radius: 1.25rem;
+
+  /* custom tokens */
+  --nebula: 66 58% 66%; /* lime */
+  --solar: 350 100% 88%; /* pink */
+  --cosmic: 88 27% 25%; /* olive */
+  --lumen: 66 40% 80%;
 }
 
+/* Dark mode tetap tersedia namun dengan kontras tinggi */
 .dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 142 76% 36%;
-  --primary-foreground: 222.2 84% 4.9%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 142 76% 36%;
-}
+  --background: 88 27% 10%; /* dark olive */
+  --foreground: 66 40% 92%; /* readable cream */
 
-.hidden {
-  --primary: 160 100% 43%;
-  --nebula: 142 71% 45%;
-  --solar: 32 100% 51%;
-  --cosmic: 84 81% 56%;
-  --lumen: 200 86% 60%;
-}
+  --card: 88 25% 14%;
+  --card-foreground: 66 40% 92%;
 
-pre.mermaid {
-  background-color: white;
+  --primary: 66 58% 60%;
+  --secondary: 350 70% 70%;
+
+  --border: 88 15% 25%;
 }
 
 @theme inline {
@@ -90,28 +68,12 @@ pre.mermaid {
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
   --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  --color-sidebar: hsl(var(--sidebar));
-  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
-  --color-sidebar-primary: hsl(var(--sidebar-primary));
-  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
-  --color-sidebar-accent: hsl(var(--sidebar-accent));
-  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
-  --color-sidebar-border: hsl(var(--sidebar-border));
-  --color-sidebar-ring: hsl(var(--sidebar-ring));
   --color-nebula: hsl(var(--nebula));
   --color-solar: hsl(var(--solar));
   --color-cosmic: hsl(var(--cosmic));
@@ -123,240 +85,77 @@ pre.mermaid {
   }
 
   body {
-    @apply bg-slate-950 text-slate-100;
+    background: linear-gradient(
+      135deg,
+      hsl(66 50% 90%),
+      hsl(350 80% 92%),
+      hsl(66 40% 85%)
+    );
   }
 }
 
 @layer utilities {
-  .text-nebula {
-    color: hsl(var(--nebula));
+  .text-glow-mint {
+    text-shadow: 0 0 10px hsl(var(--secondary) / 0.4);
   }
 
-  .text-solar {
-    color: hsl(var(--solar));
-  }
-
-  .text-cosmic {
-    color: hsl(var(--cosmic));
-  }
-
-  .text-lumen {
-    color: hsl(var(--lumen));
-  }
-
-  .line-clamp-2 {
-    display: -webkit-box;
-    line-clamp: 2;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .line-clamp-3 {
-    display: -webkit-box;
-    line-clamp: 3;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  .glass-card-bright {
+    @apply bg-white/40 backdrop-blur-md border border-white/40 shadow-xl;
   }
 }
 
-/* Enhanced animations */
-@keyframes glow {
+/* --- ANIMATIONS --- */
+@keyframes soft-float {
   0%,
   100% {
-    opacity: 0.5;
-    transform: scale(1);
+    transform: translateY(0);
   }
-
   50% {
-    opacity: 1;
-    transform: scale(1.05);
+    transform: translateY(-8px);
   }
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-20px);
-  }
+.animate-soft-float {
+  animation: soft-float 4s ease-in-out infinite;
 }
 
-@keyframes gradient {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-.animate-glow {
-  animation: glow 3s ease-in-out infinite;
-}
-
-.text-glow {
-  text-shadow:
-    0 0 8px hsl(var(--primary) / 0.4),
-    0 0 16px hsl(var(--primary) / 0.2);
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient 3s ease infinite;
-}
-
-/* Hover effects */
-.hover-lift {
-  transition: transform 0.3s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-4px);
-}
-
-/* old */
-
-.container {
-  @apply mx-auto;
-}
-
+/* Typography Cerah */
 .prose {
-  p {
-    margin-bottom: 1em;
-  }
-
-  h1 {
-    font-size: 2.25em;
-  }
-
-  h2 {
-    font-size: 1.875em;
-  }
-
+  h1,
+  h2,
   h3 {
-    font-size: 1.5em;
+    @apply font-black text-slate-800 tracking-tighter;
   }
-
-  h4 {
-    font-size: 1.25em;
-  }
-
-  h5 {
-    font-size: 1.125em;
-  }
-
-  strong,
-  b {
-    font-weight: 700;
-  }
-
-  textarea {
-    width: 100%;
-    font-size: 16px;
-  }
-
-  input {
-    font-size: 16px;
-  }
-
-  img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
+  p {
+    @apply mb-5 text-slate-700 leading-relaxed font-medium;
   }
 
   code {
-    padding: 2px 5px;
-    background-color: rgb(var(--gray-light));
-    border-radius: 2px;
-  }
-
-  pre {
-    padding: 1.5em;
-    margin: 1em 0;
-    border-radius: 8px;
-    background: white;
-    color: white;
-    overflow-x: auto;
-  }
-
-  pre > code {
-    all: unset;
-  }
-
-  blockquote {
-    border-left: 4px solid var(--blogmain);
-    padding: 0 0 0 20px;
-    margin: 0px;
-    font-size: 1rem;
-  }
-
-  hr {
-    border: none;
-    border-top: 1px solid rgb(var(--gray-light));
+    @apply bg-white/50 text-secondary px-2 py-0.5 rounded-lg border border-secondary/20;
   }
 }
 
-/* Tool progress animations */
-@keyframes tool-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.6;
-  }
+/* Flip Card Styling: Putih Bersih vs Warna Pastel */
+.flip-card-front {
+  @apply bg-white/60 backdrop-blur-lg border border-white shadow-lg text-slate-800;
 }
 
-@keyframes tool-success {
-  0% {
-    transform: scale(1);
-  }
-
-  50% {
-    transform: scale(1.05);
-  }
-
-  100% {
-    transform: scale(1);
-  }
+.flip-card-back {
+  transform: rotateY(180deg);
+  @apply bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-white shadow-xl;
 }
 
-/* Apply animations to tool progress messages */
-[data-tool-status="loading"] {
-  animation: tool-pulse 1.5s ease-in-out infinite;
-  color: #3b82f6;
-  font-weight: 500;
-}
-
-[data-tool-status="completed"] {
-  animation: tool-success 0.3s ease-out;
-  color: #10b981;
-  font-weight: 500;
-}
-
-/* Tool message styling */
+/* Tool Messages */
 .tool-message {
-  border-left: 3px solid #3b82f6;
-  margin: 8px 0;
-  background: rgba(59, 130, 246, 0.05);
-  border-radius: 4px;
-  padding: 8px 12px;
-  font-size: 0.875rem;
-  color: #3b82f6;
-  font-weight: 500;
+  @apply backdrop-blur-xl p-4 rounded-2xl text-sm font-bold my-2 border-l-4 bg-white/40 shadow-sm;
+}
+
+.tool-loading {
+  @apply border-yellow-400 bg-yellow-400/10 text-yellow-300 animate-pulse;
+}
+
+.tool-completed {
+  @apply border-emerald-400 bg-emerald-400/10 text-emerald-300;
 }
 
 .tool-loading {
@@ -484,36 +283,192 @@ pre.mermaid {
   max-width: 100%;
 }
 
-/* Card back style from CardBack.astro */
-/* Card base style for both front and back */
+/* --- Penegasan Kontras Card & Review --- */
+.flip-card-front {
+  /* Menggunakan putih solid 95% agar isi review sangat kontras dengan background luar */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  /* Border sedikit berwarna ungu agar menyambung dengan tema */
+  @apply border-2 border-primary/10 shadow-2xl;
+}
+
+.flip-card-back {
+  /* Gradasi warna yang lebih pekat/deep agar teks putih di atasnya menonjol */
+  background: linear-gradient(135deg, hsl(66 58% 60%), hsl(350 90% 75%));
+
+  @apply text-white shadow-2xl;
+  transform: rotateY(180deg);
+}
+
+/* --- Penegasan Warna Huruf Agar Terbaca --- */
+.card-link,
+.reveal-viewport p,
+.reveal-viewport li,
+.prose p {
+  /* Menggunakan Deep Indigo untuk kontras maksimal di atas background cerah */
+  color: #28301c;
+  @apply font-medium antialiased;
+}
+
+.reveal-viewport h2,
+.prose h1,
+.prose h2 {
+  /* Judul dibuat hampir hitam untuk kesan premium dan tegas */
+  color: #1c2412;
+  @apply font-extrabold tracking-tight;
+}
+
+/* --- Tool Messages: Pertegas Kontras Status --- */
+.tool-loading {
+  /* Kuning yang lebih gelap dan background lebih solid */
+  @apply border-amber-500 bg-amber-100/90 text-amber-900 font-bold border-l-4;
+}
+
+.tool-completed {
+  /* Hijau Emerald yang tegas */
+  @apply border-emerald-600 bg-emerald-100/90 text-emerald-900 font-bold border-l-4;
+}
+
+/* --- Penegasan Kontras Card & Review --- */
+.flip-card-front {
+  /* Menggunakan putih solid 95% agar isi review sangat kontras dengan background luar */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  /* Border sedikit berwarna ungu agar menyambung dengan tema */
+  @apply border-2 border-primary/10 shadow-2xl;
+}
+
+.flip-card-back {
+  /* Gradasi warna yang lebih pekat/deep agar teks putih di atasnya menonjol */
+  background: linear-gradient(135deg, hsl(325 90% 50%), hsl(270 70% 45%));
+  @apply text-white shadow-2xl;
+  transform: rotateY(180deg);
+}
+
+/* --- Penegasan Warna Huruf Agar Terbaca --- */
+.card-link,
+.reveal-viewport p,
+.reveal-viewport li,
+.prose p {
+  /* Menggunakan Deep Indigo untuk kontras maksimal di atas background cerah */
+  color: #1e1b4b;
+  @apply font-medium antialiased;
+}
+
+.reveal-viewport h2,
+.prose h1,
+.prose h2 {
+  /* Judul dibuat hampir hitam untuk kesan premium dan tegas */
+  color: #0f172a;
+  @apply font-extrabold tracking-tight;
+}
+
+/* --- Tool Messages: Pertegas Kontras Status --- */
+.tool-loading {
+  /* Kuning yang lebih gelap dan background lebih solid */
+  @apply border-amber-500 bg-amber-100/90 text-amber-900 font-bold border-l-4;
+}
+
+.tool-completed {
+  /* Hijau Emerald yang tegas */
+  @apply border-emerald-600 bg-emerald-100/90 text-emerald-900 font-bold border-l-4;
+}
+
+/* --- Penegasan Kontras Card & Review --- */
+.flip-card-front {
+  /* Menggunakan putih solid 95% agar isi review sangat kontras dengan background luar */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  /* Border sedikit berwarna ungu agar menyambung dengan tema */
+  @apply border-2 border-primary/10 shadow-2xl;
+}
+
+.flip-card-back {
+  /* Gradasi warna yang lebih pekat/deep agar teks putih di atasnya menonjol */
+  background: linear-gradient(135deg, hsl(325 90% 50%), hsl(270 70% 45%));
+  @apply text-white shadow-2xl;
+  transform: rotateY(180deg);
+}
+
+/* --- Penegasan Warna Huruf Agar Terbaca --- */
+.card-link,
+.reveal-viewport p,
+.reveal-viewport li,
+.prose p {
+  /* Menggunakan Deep Indigo untuk kontras maksimal di atas background cerah */
+  color: #1e1b4b;
+  @apply font-medium antialiased;
+}
+
+.reveal-viewport h2,
+.prose h1,
+.prose h2 {
+  /* Judul dibuat hampir hitam untuk kesan premium dan tegas */
+  color: #0f172a;
+  @apply font-extrabold tracking-tight;
+}
+
+/* --- Tool Messages: Pertegas Kontras Status --- */
+.tool-loading {
+  /* Kuning yang lebih gelap dan background lebih solid */
+  @apply border-amber-500 bg-amber-100/90 text-amber-900 font-bold border-l-4;
+}
+
+.tool-completed {
+  /* Hijau Emerald yang tegas */
+  @apply border-emerald-600 bg-emerald-100/90 text-emerald-900 font-bold border-l-4;
+}
+
+/* --- Shadow & Hover System --- */
 .flip-card-front,
 .flip-card-back {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  backface-visibility: hidden;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  transition: all 0.3s ease;
+  @apply absolute inset-0 w-full h-full backface-hidden rounded-[24px] overflow-hidden;
+  /* Shadow dipertegas: perpaduan hitam tipis dan rona ungu */
+  box-shadow:
+    0 20px 40px -10px rgba(30, 27, 75, 0.2),
+    0 10px 20px -5px rgba(0, 0, 0, 0.1);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.flip-card-inner[data-flipped="false"] .flip-card-front,
-.flip-card-inner[data-flipped="true"] .flip-card-back {
-  position: relative;
-  height: auto;
-  z-index: 2;
-  pointer-events: auto;
+.flip-card-inner:hover .flip-card-front {
+  /* Saat hover, bayangan lebih tebal agar terlihat lebih 'tinggi' */
+  box-shadow: 0 35px 70px -15px rgba(30, 27, 75, 0.3);
+  @apply -translate-y-2 border-primary/40;
 }
 
-.flip-card-inner[data-flipped="false"] .flip-card-back,
-.flip-card-inner[data-flipped="true"] .flip-card-front {
-  height: 100%;
-  pointer-events: none;
+.card-height-anim {
+  transition:
+    height 400ms ease,
+    transform 800ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* --- Mermaid Diagram: Kontras Tinggi --- */
+.reveal .mermaid.hljs {
+  /* Latar belakang sedikit krem agar elemen putih di dalam diagram tetap kelihatan */
+  background: #f8fafc;
+  @apply border border-slate-200 rounded-xl shadow-inner p-4;
+}
+
+.reveal table {
+  @apply w-full text-base border-collapse border border-slate-200;
+  background: white;
+  /* Table row selang-seling agar mudah dibaca */
+  tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+}
+
+/* --- Responsive Typography Fix --- */
+@media (max-width: 600px) {
+  .reveal-viewport h2 {
+    font-size: 1.5rem;
+    @apply mb-4;
+  }
+  .reveal-viewport p,
+  .reveal-viewport li {
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
 }
 
 .card-height-anim {
@@ -553,4 +508,13 @@ pre.mermaid {
 .reveal .mermaid.hljs svg {
   margin-left: auto;
   margin-right: auto;
+}
+
+#map .leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+.leaflet-container {
+  z-index: 0 !important;
 }

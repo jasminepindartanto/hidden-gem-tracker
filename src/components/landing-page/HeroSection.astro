@@ -6,14 +6,15 @@ import ScrollingTags from "./ScrollingTags.astro";
 export interface Props {
   uniqueTags: string[];
   doodle?: Doodle & { href: string };
-  isLoggedIn?: boolean; 
+  isLoggedIn?: boolean;
 }
 
 const { uniqueTags, doodle, isLoggedIn } = Astro.props as Props;
-const doodleEmoji = DOODLE_EMOJIS[Math.floor(Math.random() * DOODLE_EMOJIS.length)];
+const doodleEmoji =
+  DOODLE_EMOJIS[Math.floor(Math.random() * DOODLE_EMOJIS.length)];
 ---
 
-<section class="relative h-[calc(100vh-4rem)] overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+<section class="relative h-[calc(100vh-4rem)] overflow-hidden bg-gradient-to-br from-emerald-950 via-green-900 to-emerald-950">
   <div class="absolute inset-0 bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)] animate-pulse"></div>
 
   <ScrollingTags uniqueTags={uniqueTags} />
@@ -39,7 +40,7 @@ const doodleEmoji = DOODLE_EMOJIS[Math.floor(Math.random() * DOODLE_EMOJIS.lengt
                 <span class="relative inline-block text-primary text-glow animate-pulse">The Paris Of Java,</span> Uncovered
               </h1>
               <p class="mx-auto max-w-3xl text-xl text-white leading-relaxed">
-                Find the best secret spots <span class="text-nebula">From Misty</span>, <span class="text-solar">Craters to</span> and <span class="text-cosmic">artistic cafes</span> in Bandung
+                Find the best secret spots <span class="text-nebula">From Misty</span>, <span class="text-solar">Craters to</span> and <span class="text-nebula">artistic cafes</span> in Bandung
               </p>
             </>
           )}
@@ -57,7 +58,7 @@ const doodleEmoji = DOODLE_EMOJIS[Math.floor(Math.random() * DOODLE_EMOJIS.lengt
 
             <a 
               href="/blogs" 
-              class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-slate-900/50 backdrop-blur-sm hover:bg-slate-800 text-white border border-slate-700 rounded-2xl font-bold text-lg transition-all tracking-tight pointer-events-auto"
+              class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-emerald-900/50 backdrop-blur-sm hover:bg-slate-800 text-white border border-slate-700 rounded-2xl font-bold text-lg transition-all tracking-tight pointer-events-auto"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
               <span>Explore Destinations</span>

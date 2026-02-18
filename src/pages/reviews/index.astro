@@ -1,8 +1,8 @@
 ---
-import MainLayout from "./../../layouts/MainLayout.astro";
+import sql from "@/lib/db";
 import RatingSummary from "../../components/RatingSummary.astro";
 import ReviewCard from "../../components/ReviewCard.astro";
-import sql from "@/lib/db";
+import MainLayout from "./../../layouts/MainLayout.astro";
 
 // 1. Ambil data dari tabel 'ulasan' dan gabungkan dengan 'lokasi_wisata'
 const result = await sql`
@@ -19,7 +19,6 @@ const result = await sql`
   ORDER BY u.tanggal DESC
 `;
 
-
 // 2. Map data dengan proteksi terhadap nilai 'undefined' atau 'null'
 const sortedReviews = result.map((rev) => {
   const parsedDate = rev.pubDate ? new Date(rev.pubDate) : new Date();
@@ -32,21 +31,23 @@ const sortedReviews = result.map((rev) => {
       location: rev.location || "Destinasi",
       content: rev.body || "",
       pubDate: isNaN(parsedDate.getTime()) ? new Date() : parsedDate,
-      images: []
-    }
+      images: [],
+    },
   };
 });
-
 ---
 
 <MainLayout 
   title="Community Stories" 
   description="Baca ulasan terbaru dari komunitas Hidden Bandung."
 >
-  <div class="px-4 md:px-12 max-w-5xl mx-auto py-16">
+  <div class="px-4 md:px-12 max-w-5xl mx-auto py-16 bg-slate-950/70 backdrop-blur-xl border border-slate-800 rounded-[40px] shadow-2xl">
     <header class="mb-12">
-      <h1 class="text-4xl font-bold text-white mb-2 font-noto-serif">Community Stories</h1>
-      <p class="text-slate-400 text-sm">Discover Bandung through the eyes of our fellow travelers.</p>
+      <h1 class="text-5xl md:text-6xl font-noto-serif font-bold text-emerald-400 tracking-tight mb-3">
+        Community Stories
+      </h1>
+
+      <p class="text-slate-400 text-base">Discover Bandung through the eyes of our fellow travelers.</p>
     </header>
 
     <RatingSummary allReviews={sortedReviews} />
@@ -55,10 +56,11 @@ const sortedReviews = result.map((rev) => {
       <h2 class="text-xl font-bold text-white">Recent Experience</h2>
       <a 
         href="/reviews/write" 
-        class="bg-emerald-500 text-slate-950 px-8 py-3 rounded-full font-bold text-sm hover:bg-emerald-400 transition-all shadow-lg"
+        class="bg-emerald-500 text-slate-950 px-8 py-3 rounded-full font-black text-sm uppercase tracking-widest hover:bg-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.35)] border border-emerald-400"
       >
-        Write a Review
+        ✍ Write a Review
       </a>
+
     </div>
 
     <div class="space-y-6">

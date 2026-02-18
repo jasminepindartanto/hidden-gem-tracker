@@ -12,7 +12,7 @@ const locations = await sql`
 `;
 
 // Map data DB agar sesuai dengan Interface Slide di SlideCard
-const slides = locations.map(loc => ({
+const slides = locations.map((loc) => ({
   id: loc.id,
   title: loc.title,
   author: loc.author,
@@ -20,13 +20,14 @@ const slides = locations.map(loc => ({
   tags: loc.tags,
   pubDate: new Date(loc.pubDate),
   theme: "black", // Default theme untuk slide
-  transition: "slide"
+  transition: "slide",
 }));
 
 export interface Blog {
   id: string;
   title: string;
   rating?: number;
+  totalReviews?: number; // ← TAMBAHKAN INI
   href?: string;
   author?: string;
   pubDate: Date | string;
@@ -36,7 +37,7 @@ export interface Blog {
   icon?: string;
   location?: string;
   showExtraDetails?: boolean;
-  kategori_akses?: 'hidden' | 'non-hidden'; 
+  kategori_akses?: "hidden" | "non-hidden";
 }
 
 interface Props {
@@ -45,8 +46,16 @@ interface Props {
 
 const { blog } = Astro.props;
 const origin = Astro.url.origin;
+
+const formattedRating = (blog.rating || 0).toLocaleString("id-ID", {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
+const hasReviews = blog.totalReviews && blog.totalReviews > 0;
+
 const url = `${origin}/blogs/${blog.id}`;
-const isHiddenGem = blog.kategori_akses === 'hidden';
+const isHiddenGem = blog.kategori_akses === "hidden";
 
 function getCategoryColor(blogId: string = "default") {
   const gradients = [
@@ -56,14 +65,16 @@ function getCategoryColor(blogId: string = "default") {
     "from-blue-100 to-blue-200",
   ];
   const idStr = String(blogId);
-  const sum = idStr.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const sum = idStr
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const index = sum % gradients.length;
   return gradients[index];
 }
 
 const formatDate = (date: Date | string) => {
   const d = typeof date === "string" ? new Date(date) : date;
-  return d.toLocaleDateString("id-ID", { 
+  return d.toLocaleDateString("id-ID", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -109,13 +120,22 @@ const formatDate = (date: Date | string) => {
           </div>
         )}
 
-        {/* Rating */}
-        {blog.rating && (
-          <div class="absolute top-3 right-3 z-30 flex items-center gap-1 rounded-lg bg-white/95 px-2.5 py-1 text-[11px] font-bold text-slate-900 shadow-sm border border-slate-200/50">
-            <span class="text-yellow-500 text-[13px]">⭐</span>
-            <span>{Number(blog.rating).toFixed(1)}</span>
-          </div>
-        )}
+      <div class="absolute top-3 right-3 z-30 flex items-center gap-2 rounded-xl 
+        bg-slate-900/80 backdrop-blur-md 
+        px-3 py-1.5 text-[11px] font-semibold text-amber-300
+        shadow-lg border border-amber-400/30">
+
+          <span class="text-amber-400 text-[13px]">★</span>
+
+          <span>{formattedRating}</span>
+
+          {hasReviews && (
+            <span class="text-slate-400 text-[10px] font-medium">
+              ({blog.totalReviews})
+            </span>
+          )}
+        </div>
+
 
         {/* Image Handling */}
         {blog.image ? (
